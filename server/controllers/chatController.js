@@ -33,10 +33,15 @@ export const createChat = async (req, res) => {
             await newChat.save();
             
             user.chats.push(newChat._id.toString());
+            user.friends.push(userTwoId.toString());
             await user.save();
-
+            
             userTwo.chats.push(newChat._id.toString());
+            userTwo.friends.push(userId);
             await userTwo.save();
+
+
+
 
             return res.status(200).send('New chat was created');
         } catch (err) {
