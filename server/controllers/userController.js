@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import User from '../models/User.js';
 import passport from 'passport';
-
+import { generatePassword } from './../lib/passwordGenerator.js';
 export const login = async (req, res, next) => {
 
     passport.authenticate('local', function (err, user, info) {
@@ -9,7 +9,7 @@ export const login = async (req, res, next) => {
             return next(err);
         }
         if (!user) {
-            return res.status(401).send('Failed to authentication');
+            return res.status(401).send(info);
         }
         req.logIn(user, function (err) {
             if (err) {
@@ -19,7 +19,6 @@ export const login = async (req, res, next) => {
         });
     })(req, res, next);
 
-    // res.status(200).json(req.user);
 }
 
 export const logout = async (req, res) => {
@@ -32,25 +31,33 @@ export const logout = async (req, res) => {
 
 export const signup = async (req, res) => {
     const { username, name, password } = req.body;
-    // console.log(username, name, password);
-    User.register(new User({ username, name }), password, (err, user) => {
-        if (err) {
-            console.log(err);
-            return res.status(401).send('Registration failed!!');
-        }
-        passport.authenticate("local")(req, res, function () {
-            return res.status(200).json(user);
+
+    const {salt, hash} = generatePassword(password);
+    
+    try {
+        const newUser = new User({
+            username, name, hash, salt
         });
-    });
+        // username field should be unique(according to user schema)
+        // so for duplicate usename we get an error message.
+        await newUser.save();
+
+        passport.authenticate("local")(req, res, function () {
+            return res.status(201).json(newUser);
+        });
+
+    } catch (err) {
+        res.status('502').send('Database error!');
+    }
 }
 
 export const getUserData = async (req, res) => {
     const userId = mongoose.Types.ObjectId(req.params.userId);
 
     try {
-        const user = await User.findById(userId);
+        const user = await User.findById(userId, { chats: 0, friends: 0 });
         if (user) {
-            if(user.friends.some(element => req.user._id.equals(element))){
+            if (user.friends.some(element => req.user._id.equals(element))) {
                 return res.status(302).json(user);
             }
             return res.status(404).send('user is not in ur friend\'s list');
@@ -63,6 +70,7 @@ export const getUserData = async (req, res) => {
 
 export const userIsLoggedIn = async (req, res, next) => {
     if (req.isAuthenticated()) {
+        console.log('you have loggedIn')
         return next();
     }
     res.status(401).send('Unauthorized!');
