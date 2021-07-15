@@ -1,4 +1,3 @@
-import express from 'express';
 import mongoose from 'mongoose';
 import User from '../models/User.js';
 import passport from 'passport';
@@ -33,7 +32,7 @@ export const logout = async (req, res) => {
 
 export const signup = async (req, res) => {
     const { username, name, password } = req.body;
-    console.log(username, name, password);
+    // console.log(username, name, password);
     User.register(new User({ username, name }), password, (err, user) => {
         if (err) {
             console.log(err);
@@ -46,23 +45,24 @@ export const signup = async (req, res) => {
 }
 
 export const getUserData = async (req, res) => {
-    if (req.isAuthenticated()) {
-        const userId = req.query.userId;
+    const userId = mongoose.Types.ObjectId(req.params.userId);
 
-        User.findById(userId, (err, user) => {
-            if (err) {
-                return res.status(502).send('DataBase error. Can not find the user');
+    try {
+        const user = await User.findById(userId);
+        if (user) {
+            if(user.friends.some(element => req.user._id.equals(element))){
+                return res.status(302).json(user);
             }
-            return res.status(200).json(user);
-        });
-    } else {
-        return res.status(401).send('Unauthorized!!');
+            return res.status(404).send('user is not in ur friend\'s list');
+        }
+        return res.status(404).send('user not found!');
+    } catch (err) {
+        return res.status(502).send('DataBase error.');
     }
 }
 
 export const userIsLoggedIn = async (req, res, next) => {
     if (req.isAuthenticated()) {
-        console.log('you\'re signed in');
         return next();
     }
     res.status(401).send('Unauthorized!');

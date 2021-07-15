@@ -1,54 +1,49 @@
-import express from 'express';
 import mongoose from 'mongoose';
 import Chat from '../models/Chat.js';
 import User from '../models/User.js';
 export const getChats = async (req, res) => {
 
-    const currentUser = await User.findById(req.user._id);
-    const chats_Id = currentUser.chats;
+    try {
+        const currentUser = await User.findById(req.user._id)
+            .populate('chats')
+            .exec();
 
-    const chats_Id_Objects = chats_Id.map(x => mongoose.Types.ObjectId(x));
-    Chat.find({
-        '_id': {
-            $in: chats_Id_Objects
-        }
-    }, (err, chats) => {
-        if (err) {
-            return res.status(502).send('Database error!');
-        }
-        console.log('successfull!!!!!!!')
-        return res.status(200).json(chats);
-    });
+        return res.status(302).json(currentUser.chats);
+    } catch (err) {
+        return res.status(502).send('Database error!');
+    }
 };
 
 export const createChat = async (req, res) => {
     const { userId } = req.body;
+    const userOneId = mongoose.Types.ObjectId(userId)
     const userTwoId = req.user._id;
 
-    const user = await User.findById(mongoose.Types.ObjectId(userId));
-    const userTwo = await User.findById(mongoose.Types.ObjectId(userTwoId));
-    if(user && userTwo){
-        try {
-            const newChat = new Chat({ users: [userId, userTwoId] });
-            await newChat.save();
-            
-            user.chats.push(newChat._id.toString());
-            user.friends.push(userTwoId.toString());
-            await user.save();
-            
-            userTwo.chats.push(newChat._id.toString());
-            userTwo.friends.push(userId);
-            await userTwo.save();
+    try {
+        const userOne = await User.findById(userOneId);
+        const userTwo = await User.findById(userTwoId);
+        if (userOne && userTwo) {
+            if (!userOne.friends.some(element => userTwoId.equals(element))) {
+                const newChat = new Chat({ users: [userOneId, userTwoId] });
+                await newChat.save();
 
+                userOne.chats.push(newChat._id);
+                userOne.friends.push(userTwoId);
+                await userOne.save();
 
+                userTwo.chats.push(newChat._id);
+                userTwo.friends.push(userOneId);
+                await userTwo.save();
 
-
-            return res.status(200).send('New chat was created');
-        } catch (err) {
-            console.log(err);
-            return res.status(502).send('Database error!');
+                return res.status(201).send('New chat was created');
+            } else {
+                return res.status(400).send('User already has a chat with given user!');
+            }
+        } else {
+            return res.status(404).send('User not found!');
         }
-    }else{
-        return res.status(404).send('User not found!');
+    } catch (err) {
+        console.log(err);
+        return res.status(502).send('Database error!');
     }
 };
