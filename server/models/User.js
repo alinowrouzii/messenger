@@ -12,9 +12,16 @@ const userSchema = new mongoose.Schema({
     },
     // password: String,
     // profilePic:
-    chats: [String],//holds chats_Id
-    friends: [String]//holds users_Id
-});
+    chats: {//holds chats_Id
+        type: [mongoose.Types.ObjectId],
+        ref: 'Chat'
+    },
+    friends: {//holds users_Id
+        type: [mongoose.Types.ObjectId],
+        ref: 'User'
+    }
+
+}, { timestamps: true });
 
 // userSchema.plugin(passportLocalMongoose, { usernameField: 'userName' });
 userSchema.plugin(passportLocalMongoose);

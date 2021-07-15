@@ -5,8 +5,14 @@ const messageSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    sender: String,//holds user_Id
-    chat: String//holds chat_ID
+    sender: {
+        type: mongoose.Types.ObjectId,//holds user_Id
+        ref: 'User'
+    },
+    chat: {
+        type: mongoose.Types.ObjectId,//holds chat_ID
+        ref: 'Chat'
+    }
 
 }, { timestamps: true });
 
