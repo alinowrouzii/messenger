@@ -4,11 +4,12 @@ import passportLocalMongoose from 'passport-local-mongoose';
 const userSchema = new mongoose.Schema({
     username: {
         type: String,
-        required: true
+        required: true,
+        unique:true
     },
     name: {
         type: String,
-        required: true
+        required: true,
     },
     // password: String,
     // profilePic:
@@ -19,8 +20,17 @@ const userSchema = new mongoose.Schema({
     friends: {//holds users_Id
         type: [mongoose.Types.ObjectId],
         ref: 'User'
+    },
+    salt: {
+        type: String,
+        required:true,
+        select: false
+    }, 
+    hash: {
+        type: String,
+        required:true,
+        select: false
     }
-
 }, { timestamps: true });
 
 // userSchema.plugin(passportLocalMongoose, { usernameField: 'userName' });
