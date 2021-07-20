@@ -1,0 +1,23 @@
+.prof-img {
+    width: 75px;
+    height: 75px;
+    margin-right: 1rem;
+}
+
+.main-cont{
+
+    /* outline: auto; */
+  /* padding: 16px 32px; */
+  /* text-align: center; */
+  /* font-size: 16px; */
+  /* margin: 4px 2px; */
+    transition: 0.3s;
+    cursor: pointer;
+    /* border-radius: 5%; */
+
+}
+
+.main-cont:hover{
+    background-color: #37bbb4;
+    color: white;      
+}

@@ -1,0 +1,88 @@
+
+.chatPageStyles .container{
+    outline:auto;
+    outline-color: blue;
+}
+
+.mainContainer{
+    height:59rem;
+    background-color:lightblue;
+}
+
+.chatPageStyles .row {
+    outline: auto;
+    /* outline-color: red; */
+}
+
+.chatPageStyles .rowOne{
+    height: 12%;
+}
+
+.chatPageStyles .rowTwo{
+    height: 85%;
+}
+
+.chatPageStyles .contactLists{
+    /* max-height: 70%; */
+    padding-top: 20px;
+    max-height: 43rem;
+    overflow-y: auto;
+}
+
+.chatPageStyles .chatSection{
+    height: 49rem;
+    outline: auto;
+    position: relative;
+    margin-left: 7px;
+    padding-left: 7px;
+    padding-top: 10px;;
+}
+
+.chatPageStyles .sendSection{
+    position: absolute;
+    width: 90%;
+    bottom: 10px;
+    margin-left: 25px;
+}
+
+.chatPageStyles .textarea {
+    height: 75px;
+    resize: none;
+  }
+
+  .chatPageStyles .messageSection{
+      padding-top: 10px;
+      overflow-y: auto;
+      max-height: 42rem;
+  }
+
+
+  .chatPageStyles .profileSection{
+      height: 42rem;
+  }
+
+
+
+
+
+
+  /* scrollbar css */
+  /* width */
+  .chatPageStyles ::-webkit-scrollbar {
+    width: 10px;
+  }
+  
+  /* Track */
+  .chatPageStyles ::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+  
+  /* Handle */
+  .chatPageStyles ::-webkit-scrollbar-thumb {
+    background: #888;
+  }
+  
+  /* Handle on hover */
+  .chatPageStyles ::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }

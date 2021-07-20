@@ -1,0 +1,10 @@
+.loginBtn {
+    margin: 0 1rem;
+    color:white;
+    outline: red;
+    background: none;
+}
+
+.signupBtn{
+    margin-left: 1rem;
+}
