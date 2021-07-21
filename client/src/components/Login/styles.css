@@ -1,0 +1,35 @@
+.loginForm-cont{
+    background-color: white;
+    max-width: 30rem;
+    margin-top:10rem;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 50px 20px;
+    /* border:solid;
+    border-color: none; */
+    border-radius: 15px;
+    /* height:auto; */
+}
+.loginReg-cont{
+    min-height: 59rem;
+}
+
+
+.or-container {
+    align-items: center;
+    color: #ccc;
+    display: flex;
+    margin: 25px 0
+}
+
+.line-separator {
+    background-color: #ccc;
+    flex-grow: 5;
+    height: 1px
+}
+
+.or-label {
+    flex-grow: 1;
+    margin: 0 15px;
+    text-align: center
+}
