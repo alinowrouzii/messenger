@@ -11,9 +11,11 @@ const Message = (props) => {
         <>
             {props.me ?
                 <div>
-                    <div class="d-flex align-items-center test mb-3">
+                    <div class="d-flex align-items-center mb-3">
                         <div class="flex-grow-1 ms-1">
-                            <Card className="mb-2 shadow-lg p-3 bg-white" style={{ maxWidth: '18rem', float: 'right', marginRight: '20px' }}>
+                            <Card 
+                            className="mb-2 shadow-lg p-3" 
+                            style={{ maxWidth: '18rem', float: 'right', marginRight: '20px', backgroundColor:"cyan" }}>
                                 <Card.Body>
                                     <Card.Text>
                                         {props.text}
@@ -36,7 +38,7 @@ const Message = (props) => {
                         <img src={img} class="rounded-circle prof-img" alt="img" />
                     </div>
                     <div class="flex-grow-1 ms-1">
-                        <Card className="mb-2 shadow-lg p-3 bg-white" style={{float:"left", maxWidth: '18rem' }}>
+                        <Card className="mb-2 shadow-lg p-3 bg-white" style={{ float: "left", maxWidth: '18rem' }}>
                             <Card.Body>
                                 <Card.Text>
                                     {props.text}
