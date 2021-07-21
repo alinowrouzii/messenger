@@ -12,8 +12,8 @@ function App() {
   const [isLoggedin, setLogin] = useState(true);
 
   return (
-    <Router>
-      <div>
+    <div class="app-cont">
+      <Router>
         {/* <Navbar/> */}
         <Switch>
           <Route path="/about" component={About} />
@@ -21,9 +21,8 @@ function App() {
           <Route path="/login" component={Login} />
 
         </Switch>
-
-      </div>
-    </Router>
+      </Router>
+    </div>
   );
 }
 
