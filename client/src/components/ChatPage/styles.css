@@ -5,8 +5,18 @@
 }
 
 .mainContainer{
-    height:59rem;
-    background-color:lightblue;
+    /* height:auto; */
+    min-height:59rem;
+    /* background-color:lightblue; */
+
+
+    /* background: linear-gradient(to right, #E9E4F0, #D3CCE3); */
+
+    /* background: linear-gradient(to right, #ffc0cb, #800080);  */
+
+    /* background: linear-gradient(to left, #74ebd5, #acb6e5); */
+
+
 }
 
 .chatPageStyles .row {
@@ -59,6 +69,7 @@
 
   .chatPageStyles .profileSection{
       height: 42rem;
+      width:auto;
   }
 
 

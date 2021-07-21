@@ -1,7 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { Container, Row, Col, InputGroup, Button, FormControl, Form } from 'react-bootstrap';
 import ProfileInfo from './../Utils/ProfileInfo/ProfileInfo';
-import img from "./../../Images/no-profile.jpg";
 import Message from './../Utils/Message/Message'
 import MyProfileInfo from './../Utils/MyProfileInfo/MyProfileInfo'
 import 'emoji-mart/css/emoji-mart.css'
@@ -10,9 +9,7 @@ import Profile from '../Utils/Profile/Profile';
 import './styles.css';
 const ChatPage = () => {
 
-
     const [typedText, setTypedText] = useState("");
-
 
     const scrollRef = useRef();
     useEffect(() => {
@@ -23,7 +20,7 @@ const ChatPage = () => {
         <>
             <Container className="mainContainer chatPageStyles" fluid>
                 <Row className="rowOne mb-3">
-                    <Col lg={4} style={{ marginTop: "15px" }}>
+                    <Col lg={4} style={{ marginTop: "15px", marginBottom:"10px" }}>
                         <MyProfileInfo />
                     </Col>
                     <Col lg={8}>
@@ -83,7 +80,6 @@ const ChatPage = () => {
                         </Row>
                     </Col>
                     <Col lg={8}>
-                        {/* <Container className="chatSection"> */}
                         <div className="chatSection">
 
                             <div className="messageSection">
