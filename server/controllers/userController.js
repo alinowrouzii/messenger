@@ -15,14 +15,14 @@ export const login = async (req, res, next) => {
             if (err) {
                 return next(err);
             }
-            return res.status(200).send({ message: 'you have been successfully logged in' });
+            return res.status(200).json({ user, message: 'you have been successfully logged in' });
         });
     })(req, res, next);
 }
 
 export const logout = async (req, res) => {
     if (req.isAuthenticated()) {
-        console.log(req.user)
+        // console.log(req.user)
         req.logout();
         return res.status(200).send({ message: "User has been successfully logged out" });
     }
@@ -48,9 +48,9 @@ export const signup = async (req, res) => {
         // so for duplicate usename we get an error message.
         await newUser.save();
 
-        passport.authenticate("local")(req, res, function () {
-            return res.status(201).send('you have been successfully signed up');
-        });
+        // passport.authenticate("local")(req, res, function () {
+        return res.status(201).send('you have been successfully signed up');
+        // });
 
     } catch (err) {
         res.status('502').send({ message: 'Database error!' });
