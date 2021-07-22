@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Row, Container, Form, Button, ButtonGroup } from 'react-bootstrap';
+import { useDispatch, useSelector } from 'react-redux';
+import { login, signup } from '../../actions/user.js';
 import { Animated } from "react-animated-css";
 import AnimateHeight from 'react-animate-height';
 
@@ -13,6 +15,29 @@ const Login = () => {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
 
+    const loginRegisterMessage = useSelector(state => state.userData.message);
+    const [isLoginMessage, setLoginMessage] = useState(true);
+    const dispatch = useDispatch();
+
+    const handleSubmit = (e) => {
+        console.log('prevent def')
+        e.preventDefault();
+        if (isLoginForm) {
+            dispatch(login(username, password))
+            .then(() => {
+                console.log('user logged in succesfully. im in react')
+            }).catch((err) => {
+                    setLoginMessage(true);
+                });
+        } else {
+            dispatch(signup(name, username, password)).then(() => {
+                console.log('user registered succesfully. im in react')
+            }).catch((err) => {
+                setLoginMessage(false);
+            });
+        }
+    }
+
     return (
         <Container className="loginReg-cont shadow-lg">
             <Row>
@@ -20,7 +45,7 @@ const Login = () => {
                     duration={1000}
                     height={'auto'}
                 >
-                    <div class="loginForm-cont shadow-lg">
+                    <div className="loginForm-cont shadow-lg">
                         <div>
                             <ButtonGroup aria-label="LoginReg Button" className="mb-3">
                                 <Button onClick={() => setLoginForm(true)} active={isLoginForm} className="shadow-none" variant="outline-secondary">Login</Button>
@@ -30,7 +55,7 @@ const Login = () => {
 
 
                         <div>
-                            <Form className="mb-3" >
+                            <Form className="mb-3" onSubmit={handleSubmit} >
 
                                 <Animated animationOut="fadeOut" isVisible={!isLoginForm}>
                                     {!isLoginForm && <Form.Group className="mb-3" controlId="formBasicText">
@@ -53,7 +78,7 @@ const Login = () => {
                                     <Form.Check type="checkbox" onChange={(e) => setShowPassword(e.target.checked)} label="Show password!" />
                                 </Form.Group>
                                 <div className="d-grid gap-2 mb-3">
-                                    <Button variant={isLoginForm ? "primary" : "warning"} size="lg" type="submit">
+                                    <Button variant={isLoginForm ? "primary" : "warning"} size="lg" type="submit" >
                                         {isLoginForm ? 'Login!' : 'Register!'}
                                     </Button>
                                 </div>
@@ -64,12 +89,24 @@ const Login = () => {
                                         </Form.Group>
                                     }
                                 </Animated>
+                                {isLoginForm && isLoginMessage &&
+                                    <div className="warning-message">
+                                        {loginRegisterMessage}
+                                    </div>
+                                }
+                                {!isLoginForm && !isLoginMessage &&
+                                    <div className="warning-message">
+                                        {loginRegisterMessage}
+                                    </div>
+                                }
+
                             </Form>
-                            <div class="or-container">
-                                <div class="line-separator"></div>
-                                <div class="or-label">or</div>
-                                <div class="line-separator"></div>
+                            <div className="or-container">
+                                <div className="line-separator"></div>
+                                <div className="or-label">or</div>
+                                <div className="line-separator"></div>
                             </div>
+
                             <div className="d-grid gap-2">
                                 <Button variant="outline-primary" size="lg" type="submit">
                                     <img src="https://img.icons8.com/color/16/000000/google-logo.png" /> Login Using Google
