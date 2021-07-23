@@ -9,6 +9,7 @@ import cors from 'cors';
 import userRoute from './route/user.js';
 import messageRoute from './route/message.js';
 import chatRoute from './route/chat.js';
+import authRoute from './route/auth.js';
 
 const app = express();
 
@@ -40,6 +41,7 @@ mongooseConfig();
 app.use('/user', userRoute);
 app.use('/message', messageRoute);
 app.use('/chat', chatRoute);
+app.use('/auth', authRoute);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server is running on Port: ${PORT}`));
