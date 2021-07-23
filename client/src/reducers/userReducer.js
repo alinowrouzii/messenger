@@ -3,11 +3,11 @@ import {
     REGISTER_FAIL,
     LOGIN_SUCCESS,
     LOGIN_FAIL,
-    SET_MESSAGE,
     LOGOUT,
+    SET_LOGIN_REG_MESSAGE
 } from "../actions/types";
 
-const initialState = { isLoggedIn: false, message: "", user: null };
+const initialState = { isLoggedIn: false, loginRegMessage: "", user: null };
 
 export default (state = initialState, action) => {
     const { type, payload } = action;
@@ -37,16 +37,16 @@ export default (state = initialState, action) => {
                 isLoggedIn: false,
                 user: null,
             };
-        case SET_MESSAGE:
-            return {
-                ...state,
-                message: payload.message,
-            }
         case LOGOUT:
             return {
                 ...state,
                 isLoggedIn: false,
                 user: null,
+            };
+        case SET_LOGIN_REG_MESSAGE:
+            return {
+                ...state,
+                loginRegMessage: payload.message,
             };
         default:
             return state;
