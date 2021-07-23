@@ -20,22 +20,22 @@ export const sendMessage = async (req, res) => {
 
                     const msg = new Message({ text, sender: senderId, chat: chatId });
                     await msg.save();
-                    return res.status(201).send('Message sent!');
+                    return res.status(201).json({ message: 'Message sent!' });
 
                 } else {
-                    return res.status(404).send('Can\'t send message to other chat!');
+                    return res.status(404).json({ message: 'Can\'t send message to other chat!' });
                 }
 
             } else {
-                return res.status(404).send('Chat with that Id not found!');
+                return res.status(404).json({ message: 'Chat with that Id not found!' });
             }
 
         } catch (err) {
             console.log(err);
-            return res.status(502).send('DataBase error on creating message');
+            return res.status(502).json({ message: 'DataBase error on creating message' });
         }
     } else {
-        return res.status(404).send('Can\'t send message with diffrenet id!');
+        return res.status(404).json({ message: 'Can\'t send message with diffrenet id!'});
     }
 
 }
@@ -52,12 +52,12 @@ export const getMessages = async (req, res) => {
         if (currentUser.chats.some(element => chatId.equals(element))) {
             const messages = await Message.find({ chat: chatId });
 
-            return res.status(302).json(messages);
+            return res.status(302).json({ messages, });
         } else {
-            return res.status(404).send('This chat not found in your chat list!!')
+            return res.status(404).json({ message: 'This chat not found in your chat list!!' })
         }
     } catch (err) {
-        return res.status(502).send('DataBase error!');
+        return res.status(502).json({message: 'DataBase error!'});
     }
 
 }
