@@ -1,7 +1,7 @@
 
 import express from 'express';
 import { getMessages, sendMessage } from '../controllers/messageController.js'
-import { userIsLoggedIn } from './../controllers/userController.js';
+import { userIsLoggedIn } from './../controllers/authController.js';
 
 const router = express.Router();
 
