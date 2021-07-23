@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import storage from 'redux-persist/lib/storage' // defaults to localStorage for web
+
+import React, { useState,useEffect } from 'react';
 import { Row, Container, Form, Button, ButtonGroup } from 'react-bootstrap';
-import { useDispatch, useSelector } from 'react-redux';
-import { login, signup } from '../../actions/user.js';
+import { useDispatch, useSelector} from 'react-redux';
+import { login, signup } from '../../actions/auth.js';
 import { Animated } from "react-animated-css";
 import AnimateHeight from 'react-animate-height';
 
@@ -15,36 +17,45 @@ const Login = () => {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
 
-    const loginRegisterMessage = useSelector(state => state.userData.message);
+    const loginRegisterMessage = useSelector(state => state.auth.loginRegMessage);
     const [isLoginMessage, setLoginMessage] = useState(true);
+    const [colorIsGreen, setColorIsGreen] = useState(false);
+
     const dispatch = useDispatch();
 
+
+    useEffect(()=>{
+        // storage.removeItem('persist:root');
+
+    },[])
     const handleSubmit = (e) => {
-        console.log('prevent def')
         e.preventDefault();
         if (isLoginForm) {
             dispatch(login(username, password))
-            .then(() => {
-                console.log('user logged in succesfully. im in react')
-            }).catch((err) => {
+                .then(() => {
+                    console.log('user logged in succesfully. im in react')
+                }).catch((err) => {
                     setLoginMessage(true);
+                    setColorIsGreen(false);
                 });
         } else {
-            dispatch(signup(name, username, password)).then(() => {
-                console.log('user registered succesfully. im in react')
-            }).catch((err) => {
-                setLoginMessage(false);
-            });
+            dispatch(signup(name, username, password))
+                .then(() => {
+                    setLoginMessage(false);
+                    setColorIsGreen(true);
+                    console.log('user registered succesfully. im in react')
+                }).catch((err) => {
+                    setColorIsGreen(false);
+                    setLoginMessage(false);
+                });
         }
     }
 
     return (
-        <Container className="loginReg-cont shadow-lg">
+        <Container className="loginReg-cont">
             <Row>
-                <AnimateHeight
-                    duration={1000}
-                    height={'auto'}
-                >
+                <Container className="loginReg-row shadow-lg" >
+
                     <div className="loginForm-cont shadow-lg">
                         <div>
                             <ButtonGroup aria-label="LoginReg Button" className="mb-3">
@@ -52,7 +63,6 @@ const Login = () => {
                                 <Button onClick={() => setLoginForm(false)} active={!isLoginForm} className="shadow-none" variant="outline-secondary">Signup</Button>
                             </ButtonGroup>
                         </div>
-
 
                         <div>
                             <Form className="mb-3" onSubmit={handleSubmit} >
@@ -95,7 +105,7 @@ const Login = () => {
                                     </div>
                                 }
                                 {!isLoginForm && !isLoginMessage &&
-                                    <div className="warning-message">
+                                    <div className={colorIsGreen ? "success-message" : "warning-message"}>
                                         {loginRegisterMessage}
                                     </div>
                                 }
@@ -115,7 +125,7 @@ const Login = () => {
 
                         </div>
                     </div>
-                </AnimateHeight>
+                </Container>
 
             </Row>
         </Container>
