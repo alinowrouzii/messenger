@@ -4,9 +4,19 @@ import User from '../models/User.js';
 export const getChats = async (req, res) => {
 
     try {
+        // const currentUser = await User.findById(req.user._id)
+        //     .populate('chats')
+        //     .exec();
+
         const currentUser = await User.findById(req.user._id)
-            .populate('chats')
-            .exec();
+            .populate({
+                path: 'chats',
+                model: 'Chat',
+                populate: {
+                    path: 'users',
+                    model: 'User'
+                }
+            }).exec();
 
         return res.status(302).json({ chats: currentUser.chats });
     } catch (err) {
