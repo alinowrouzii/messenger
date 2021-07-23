@@ -8,9 +8,9 @@ export const getChats = async (req, res) => {
             .populate('chats')
             .exec();
 
-        return res.status(302).json(currentUser.chats);
+        return res.status(302).json({ chats: currentUser.chats });
     } catch (err) {
-        return res.status(502).send('Database error!');
+        return res.status(502).json({ message: 'Database error!' });
     }
 };
 
@@ -35,15 +35,15 @@ export const createChat = async (req, res) => {
                 userTwo.friends.push(userOneId);
                 await userTwo.save();
 
-                return res.status(201).send('New chat was created');
+                return res.status(201).json({ message: 'New chat was created' });
             } else {
-                return res.status(400).send('User already has a chat with given user!');
+                return res.status(400).json({ message: 'User already has a chat with given user!' });
             }
         } else {
-            return res.status(404).send('User not found!');
+            return res.status(404).json({ message: 'User not found!' });
         }
     } catch (err) {
         console.log(err);
-        return res.status(502).send('Database error!');
+        return res.status(502).json({ message: 'Database error!' });
     }
 };
