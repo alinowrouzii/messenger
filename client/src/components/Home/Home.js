@@ -5,8 +5,7 @@ import Login from './../Login/Login';
 import { useSelector } from 'react-redux';
 const Home = () => {
 
-    //isLoggedin should be global and we should use redux and use isLoggedIn globally
-    const isLoggedIn = useSelector(state => state.userData.isLoggedIn);
+    const isLoggedIn = useSelector(state => state.auth.isLoggedIn);
     useEffect(()=>{
         console.log(isLoggedIn)
     });
