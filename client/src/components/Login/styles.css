@@ -1,7 +1,6 @@
 .loginForm-cont{
     background-color: white;
     max-width: 30rem;
-    margin-top:10rem;
     margin-left: auto;
     margin-right: auto;
     padding: 50px 20px;
@@ -11,9 +10,8 @@
     /* height:auto; */
 }
 .loginReg-cont{
-    min-height: 59rem;
+    min-height: 55rem;
 }
-
 
 .or-container {
     align-items: center;
@@ -36,4 +34,16 @@
 
 .warning-message{
     color:red;
+}
+
+.success-message{
+    color:green;
+}
+
+
+.loginReg-row{
+    margin-top: 5rem;
+    padding-top: 5rem;
+    padding-bottom: 5rem;
+    border-radius: 15px;
 }
