@@ -1,8 +1,9 @@
-import { signup as reg, login as log_in } from './../api/user.js'
+import storage from 'redux-persist/lib/storage' // defaults to localStorage for web
+
+import { signup as reg, login as log_in, logout as log_out } from './../api/user.js'
 import {
   REGISTER_SUCCESS,
   REGISTER_FAIL,
-  SET_MESSAGE,
   LOGIN_SUCCESS,
   LOGIN_FAIL,
   LOGOUT,
@@ -13,12 +14,9 @@ export const signup = (name, username, password) => (dispatch) => {
     (response) => {
       dispatch({
         type: REGISTER_SUCCESS,
-      });
-
-      dispatch({
-        type: SET_MESSAGE,
         payload: { message: response.data.message },
       });
+
       return Promise.resolve();
     },
     (error) => {
@@ -31,11 +29,8 @@ export const signup = (name, username, password) => (dispatch) => {
 
       dispatch({
         type: REGISTER_FAIL,
-      });
+        payload: { message, }
 
-      dispatch({
-        type: SET_MESSAGE,
-        payload: { message, },
       });
 
       return Promise.reject();
@@ -43,16 +38,19 @@ export const signup = (name, username, password) => (dispatch) => {
   );
 };
 
-
-
 export const login = (username, password) => (dispatch) => {
   return log_in({ username, password }).then(
-    (data) => {
-      console.log(data.data)
+    (response) => {
+      console.log(response.data)
       dispatch({
         type: LOGIN_SUCCESS,
-        payload: { user: data.data.user },
+        payload: {
+          user: response.data.user,
+          message: ""
+        },
+
       });
+
       return Promise.resolve();
     },
     (error) => {
@@ -65,14 +63,41 @@ export const login = (username, password) => (dispatch) => {
 
       dispatch({
         type: LOGIN_FAIL,
-      });
-
-      dispatch({
-        type: SET_MESSAGE,
         payload: { message, }
       });
 
       return Promise.reject();
     }
   );
+};
+
+
+
+export const logout = () => (dispatch) => {
+
+  storage.removeItem('persist:root');
+  dispatch({
+    type: LOGOUT,
+  });
+
+  return log_out()
+    .then(
+      (response) => {
+        return Promise.resolve();
+      },
+      (error) => {
+        const message =
+          (error.response &&
+            error.response.data &&
+            error.response.data.message) ||
+          error.message ||
+          error.toString();
+
+        // dispatch({
+        //   type: SET_MESSAGE,
+        //   payload: { message, },
+        // });
+        return Promise.reject();
+      }
+    );
 };
