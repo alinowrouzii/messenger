@@ -14,11 +14,13 @@ const userSchema = new mongoose.Schema({
     // profilePic:
     chats: {//holds chats_Id
         type: [mongoose.Types.ObjectId],
-        ref: 'Chat'
+        ref: 'Chat',
+        select:false
     },
     friends: {//holds users_Id
         type: [mongoose.Types.ObjectId],
-        ref: 'User'
+        ref: 'User',
+        select:false
     },
     salt: {
         type: String,
