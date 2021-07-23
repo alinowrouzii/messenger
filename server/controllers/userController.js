@@ -9,7 +9,8 @@ export const login = async (req, res, next) => {
             return next(err);
         }
         if (!user) {
-            return res.status(401).send(info);
+            // console.log(info)
+            return res.status(401).json({message: info.message});
         }
         req.logIn(user, function (err) {
             if (err) {
@@ -23,10 +24,11 @@ export const login = async (req, res, next) => {
 export const logout = async (req, res) => {
     if (req.isAuthenticated()) {
         // console.log(req.user)
+        console.log('logged out!!')
         req.logout();
-        return res.status(200).send({ message: "User has been successfully logged out" });
+        return res.status(200).json({ message: "User has been successfully logged out" });
     }
-    return res.status(401).send({ message: 'you\'ve not logged in yet' });
+    return res.status(401).json({ message: 'you\'ve not logged in yet' });
 }
 
 export const signup = async (req, res) => {
@@ -34,11 +36,17 @@ export const signup = async (req, res) => {
 
     const { salt, hash } = generatePassword(password);
 
+    if (password.length === 0) {
+        return res.status(400).json({ message: 'Password field is empty!!' });
+    } else if (password.length < 6) {
+        return res.status(400).json({ message: 'password should be at least 6 characters!!' });
+    }
+
     try {
 
         const user = await User.findOne({ username });
         if (user) {
-            return res.status(400).send({ message: 'username exists' });
+            return res.status(400).json({ message: 'username exists' });
         }
 
         const newUser = new User({
@@ -49,11 +57,11 @@ export const signup = async (req, res) => {
         await newUser.save();
 
         // passport.authenticate("local")(req, res, function () {
-        return res.status(201).send('you have been successfully signed up');
+        return res.status(201).json({ message: 'you have been successfully signed up' });
         // });
 
     } catch (err) {
-        res.status('502').send({ message: 'Database error!' });
+        res.status('502').json({ message: 'Database error!' });
     }
 }
 
@@ -67,9 +75,9 @@ export const getMe = async (req, res) => {
         if (user) {
             return res.status(302).json(user);
         }
-        return res.status(404).send({ message: 'user not found!' });
+        return res.status(404).json({ message: 'user not found!' });
     } catch (err) {
-        return res.status(502).send({ message: 'DataBase error.' });
+        return res.status(502).json({ message: 'DataBase error.' });
     }
 }
 
@@ -79,12 +87,12 @@ export const getUserData = async (req, res) => {
     try {
         const user = await User.findById(userId, { chats: 0, friends: 0 });
         if (user) {
-            return res.status(302).json(user);
+            return res.status(302).json({user,});
         }
-        return res.status(404).send({ message: 'user not found!' });
+        return res.status(404).json({ message: 'user not found!' });
     } catch (err) {
         console.log(err);
-        return res.status(502).send({ message: 'DataBase error.' });
+        return res.status(502).json({ message: 'DataBase error.' });
     }
 }
 
@@ -92,5 +100,5 @@ export const userIsLoggedIn = async (req, res, next) => {
     if (req.isAuthenticated()) {
         return next();
     }
-    res.status(401).send({ message: 'Unauthorized!' });
+    res.status(401).json({ message: 'Unauthorized!' });
 }
