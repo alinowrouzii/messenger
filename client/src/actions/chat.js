@@ -12,7 +12,10 @@ export const createChat = (userId) => (dispatch) => {
         (response) => {
             dispatch({
                 type: CREATE_CHAT_SUCCESS,
-                payload: response.data.message
+                payload: {
+                    chat: response.data.chat,
+                    message: response.data.message
+                }
             });
             return Promise.resolve();
         },
@@ -40,7 +43,10 @@ export const getChats = () => (dispatch) => {
             console.log(response.data)
             dispatch({
                 type: GET_CHATS_SUCCESS,
-                payload: { chats: response.data.chats },
+                payload: {
+                    chats: response.data.chats,
+                    message: ""
+                },
             });
 
             return Promise.resolve();
