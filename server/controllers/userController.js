@@ -8,7 +8,7 @@ export const getMe = async (req, res) => {
     try {
         const user = await User.findById(userId);
         if (user) {
-            return res.status(302).json({user,});
+            return res.status(200).json({user,});
         }
         return res.status(404).json({ message: 'user not found!' });
     } catch (err) {
@@ -22,7 +22,7 @@ export const getUserData = async (req, res) => {
     try {
         const user = await User.findById(userId, { chats: 0, friends: 0 });
         if (user) {
-            return res.status(302).json({user,});
+            return res.status(200).json({user,});
         }
         return res.status(404).json({ message: 'user not found!' });
     } catch (err) {

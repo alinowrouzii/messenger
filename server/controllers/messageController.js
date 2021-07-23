@@ -52,7 +52,7 @@ export const getMessages = async (req, res) => {
         if (currentUser.chats.some(element => chatId.equals(element))) {
             const messages = await Message.find({ chat: chatId });
 
-            return res.status(302).json({ messages, });
+            return res.status(200).json({ messages, });
         } else {
             return res.status(404).json({ message: 'This chat not found in your chat list!!' })
         }

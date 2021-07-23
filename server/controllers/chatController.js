@@ -18,7 +18,7 @@ export const getChats = async (req, res) => {
                 }
             }).exec();
 
-        return res.status(302).json({ chats: currentUser.chats });
+        return res.status(200).json({ chats: currentUser.chats });
     } catch (err) {
         return res.status(502).json({ message: 'Database error!' });
     }
@@ -30,8 +30,8 @@ export const createChat = async (req, res) => {
     const userTwoId = req.user._id;
 
     try {
-        const userOne = await User.findById(userOneId);
-        const userTwo = await User.findById(userTwoId);
+        const userOne = await User.findById(userOneId).select('+friends').select('+chats');
+        const userTwo = await User.findById(userTwoId).select('+friends').select('+chats');
         if (userOne && userTwo) {
             if (!userOne.friends.some(element => userTwoId.equals(element))) {
                 const newChat = new Chat({ users: [userOneId, userTwoId] });
@@ -45,7 +45,10 @@ export const createChat = async (req, res) => {
                 userTwo.friends.push(userOneId);
                 await userTwo.save();
 
-                return res.status(201).json({ message: 'New chat was created' });
+
+                const chat = await Chat.findById(newChat._id).populate('users').exec();
+
+                return res.status(201).json({ chat, message: 'New chat was created' });
             } else {
                 return res.status(400).json({ message: 'User already has a chat with given user!' });
             }
