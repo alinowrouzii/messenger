@@ -20,7 +20,7 @@
 }
 
 .chatPageStyles .row {
-    outline: auto;
+    /* outline: auto; */
     /* outline-color: red; */
 }
 
@@ -41,7 +41,7 @@
 
 .chatPageStyles .chatSection{
     height: 49rem;
-    outline: auto;
+    /* outline: auto; */
     position: relative;
     margin-left: 7px;
     padding-left: 7px;
