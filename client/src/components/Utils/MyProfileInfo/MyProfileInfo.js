@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { OverlayTrigger, Tooltip } from 'react-bootstrap';
+import { useSelector } from 'react-redux';
 import img from './../../../Images/no-profile.jpg'
 import './styles.css';
 
@@ -8,9 +9,19 @@ const MyProfileInfo = () => {
 
 
     const [toggle, setToggle] = useState(true)
-    const [name, setName] = useState('ALiNowrouzi')
-    const [username, setUsername] = useState('ALiNowrouzi')
+    const [name, setName] = useState('loading...')
+    const [username, setUsername] = useState('loading...')
 
+    const ownUser = useSelector(state=> state.userData.ownUser);
+    const ownUserIsReady = useSelector(state=> state.userData.ownUserIsReady);
+
+    useEffect(()=>{
+        // console.log('recal in refresh')
+        if(ownUserIsReady){
+            setName(ownUser?.name);
+            setUsername(ownUser?.username);
+        }
+    },[ownUserIsReady]);
 
     const handleKeyPress = (e) => {
         if (e.key === 'Enter') {
@@ -29,17 +40,17 @@ const MyProfileInfo = () => {
 
 
     return (
-        <div class="d-flex align-items-center myProfileInfo rounded">
+        <div className="d-flex align-items-center myProfileInfo rounded">
             <OverlayTrigger
                 placement="right"
                 delay={{ show: 250, hide: 400 }}
                 overlay={renderTooltip}
             >
-                <div class="flex-shrink-0">
-                    <img src={img} class="rounded-circle prof-img" alt="img" />
+                <div className="flex-shrink-0">
+                    <img src={img} className="rounded-circle prof-img" alt="img" />
                 </div>
             </OverlayTrigger>
-            <div class="flex-grow-1 ms-3">
+            <div className="flex-grow-1 ms-3 shadow-lg testt rounded">
                 name:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                 {toggle ? (
                     <span onDoubleClick={() => { setToggle(false) }}>
