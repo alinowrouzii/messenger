@@ -4,6 +4,7 @@ import {
   FETCH_ME_FAIL,
   FETCH_USER_SUCCESS,
   FETCH_USER_FAIL,
+  SET_OWN_USER_READY,
   FETCH_CONTACT_USERS_SUCCESS,
   FETCH_CONTACT_USERS_FAIL,
 } from "./types";
@@ -20,6 +21,10 @@ export const getMe = () => (dispatch) => {
         },
       });
 
+      dispatch({
+        type: SET_OWN_USER_READY
+      });
+      
       return Promise.resolve();
     },
     (error) => {
