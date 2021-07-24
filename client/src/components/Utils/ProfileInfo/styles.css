@@ -18,6 +18,10 @@
 }
 
 .main-cont:hover{
-    background-color: #37bbb4;
+    background-color: #44d1ca;
     color: white;      
+}
+
+.img-cont{
+    margin-left: 5px;
 }
