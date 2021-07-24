@@ -7,7 +7,8 @@ import {
     LOGIN_SUCCESS,
     LOGIN_FAIL,
     LOGOUT,
-    FETCH_ME_SUCCESS
+    FETCH_ME_SUCCESS,
+    SET_OWN_USER_READY
 } from "./types";
 
 export const signup = (name, username, password) => (dispatch) => {
@@ -56,6 +57,10 @@ export const login = (username, password) => (dispatch) => {
                     user: response.data.user,
                     message: ""
                 },
+            });
+
+            dispatch({
+                type: SET_OWN_USER_READY
             });
 
             return Promise.resolve();

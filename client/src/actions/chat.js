@@ -4,7 +4,8 @@ import {
     GET_CHATS_SUCCESS,
     GET_CHATS_FAIL,
     CREATE_CHAT_SUCCESS,
-    CREATE_CHAT_FAIL
+    CREATE_CHAT_FAIL,
+    SET_CHATS_READY
 } from "./types";
 
 export const createChat = (userId) => (dispatch) => {
@@ -17,6 +18,13 @@ export const createChat = (userId) => (dispatch) => {
                     message: response.data.message
                 }
             });
+            dispatch({
+                type: SET_CHATS_READY,
+                payload: {
+                    isReady: true
+                }
+            });
+
             return Promise.resolve();
         },
         (error) => {
@@ -47,6 +55,13 @@ export const getChats = () => (dispatch) => {
                     chats: response.data.chats,
                     message: ""
                 },
+            });
+
+            dispatch({
+                type: SET_CHATS_READY,
+                payload: {
+                    isReady: true
+                }
             });
 
             return Promise.resolve();

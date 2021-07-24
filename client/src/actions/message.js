@@ -4,7 +4,8 @@ import {
     SEND_MESSAGE_SUCCESS,
     SEND_MESSAGE_FAIL,
     GET_MESSAGES_SUCCESS,
-    GET_MESSAGES_FAIL
+    GET_MESSAGES_FAIL,
+    SET_MESSAGE_READY
 } from "./types";
 
 export const sendMessage = (text, sender, chatId) => (dispatch) => {
@@ -12,12 +13,23 @@ export const sendMessage = (text, sender, chatId) => (dispatch) => {
         (response) => {
             dispatch({
                 type: SEND_MESSAGE_SUCCESS,
-                payload: { message: response.data.message }
+                payload: {
+                    newMessage: response.data.message,
+                    messageInfo: response.data.messageInfo
+                }
             });
+
+            dispatch({
+                type: SET_MESSAGE_READY,
+                payload: {
+                    isReady: true
+                }
+            });
+
             return Promise.resolve();
         },
         (error) => {
-            const message =
+            const messageInfo =
                 (error.response &&
                     error.response.data &&
                     error.response.data.message) ||
@@ -26,7 +38,7 @@ export const sendMessage = (text, sender, chatId) => (dispatch) => {
 
             dispatch({
                 type: SEND_MESSAGE_FAIL,
-                payload: { message, },
+                payload: { messageInfo, },
             });
 
             return Promise.reject();
@@ -40,12 +52,22 @@ export const getMessages = (chatId) => (dispatch) => {
             console.log(response.data)
             dispatch({
                 type: GET_MESSAGES_SUCCESS,
-                payload: { messages: response.data.messages },
+                payload: {
+                    messages: response.data.messages,
+                    messageInfo: ""
+                },
+            });
+
+            dispatch({
+                type: SET_MESSAGE_READY,
+                payload: {
+                    isReady: true
+                }
             });
             return Promise.resolve();
         },
         (error) => {
-            const message =
+            const messageInfo =
                 (error.response &&
                     error.response.data &&
                     error.response.data.message) ||
@@ -54,7 +76,7 @@ export const getMessages = (chatId) => (dispatch) => {
 
             dispatch({
                 type: GET_MESSAGES_FAIL,
-                payload: { message, }
+                payload: { messageInfo, }
             });
             return Promise.reject();
         }
