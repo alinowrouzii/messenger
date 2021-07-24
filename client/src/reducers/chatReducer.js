@@ -3,10 +3,11 @@ import {
     CREATE_CHAT_FAIL,
     GET_CHATS_SUCCESS,
     GET_CHATS_FAIL,
+    SET_CHATS_READY,
     LOGOUT
 } from "../actions/types";
 
-const initialState = { chats: [], chatMessage: "" };
+const initialState = { chats: [], chatMessage: "" , chatsIsReady:false };
 
 export default (state = initialState, action) => {
     const { type, payload } = action;
@@ -34,6 +35,11 @@ export default (state = initialState, action) => {
             return {
                 ...state,
                 chatMessage: payload.message
+            };
+        case SET_CHATS_READY:
+            return {
+                ...state,
+                chatsIsReady: payload.isReady
             };
         case LOGOUT:
             return initialState;
