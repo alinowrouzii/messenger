@@ -1,8 +1,8 @@
 import storage from 'redux-persist/lib/storage' // defaults to localStorage for web
 
-import React, { useState,useEffect } from 'react';
-import { Row, Container, Form, Button, ButtonGroup } from 'react-bootstrap';
-import { useDispatch, useSelector} from 'react-redux';
+import React, { useState, useEffect } from 'react';
+import { Row, Container, Form, Button, InputGroup, FormControl, ButtonGroup } from 'react-bootstrap';
+import { useDispatch, useSelector } from 'react-redux';
 import { login, signup } from '../../actions/auth.js';
 import { Animated } from "react-animated-css";
 import AnimateHeight from 'react-animate-height';
@@ -24,10 +24,10 @@ const Login = () => {
     const dispatch = useDispatch();
 
 
-    useEffect(()=>{
+    useEffect(() => {
         // storage.removeItem('persist:root');
 
-    },[])
+    }, [])
     const handleSubmit = (e) => {
         e.preventDefault();
         if (isLoginForm) {
@@ -79,14 +79,31 @@ const Login = () => {
                                     <Form.Control type="text" onChange={(e) => setUsername(e.target.value)} value={username} placeholder="Enter ur username!" />
                                 </Form.Group>
 
-                                <Form.Group className="mb-3" controlId="formBasicPassword">
+                                <Form.Group className="mb-4" controlId="formBasicPassword">
                                     <Form.Label>Password</Form.Label>
-                                    <Form.Control type={showPassword ? "text" : "password"} onChange={(e) => setPassword(e.target.value)} value={password} placeholder="Password" />
+
+                                    <InputGroup className="mb-3">
+                                        <FormControl type={showPassword ? "text" : "password"}
+                                            aria-label="Enter your passowrd!"
+                                            onChange={(e) => setPassword(e.target.value)}
+                                            value={password}
+                                            placeholder="Password"
+                                        />
+                                        <Button active={showPassword}
+                                            onClick={() => setShowPassword((prev) => !prev)}
+                                            className="shadow-none"
+                                            variant="outline-dark"
+                                        >
+                                            show!
+                                        </Button>
+                                    </InputGroup>
+
+                                    {/* <Form.Control type={showPassword ? "text" : "password"} onChange={(e) => setPassword(e.target.value)} value={password} placeholder="Password" /> */}
                                 </Form.Group>
 
-                                <Form.Group className="mb-3" controlId="formBasicCheckbox">
+                                {/* <Form.Group className="mb-3" controlId="formBasicCheckbox">
                                     <Form.Check type="checkbox" onChange={(e) => setShowPassword(e.target.checked)} label="Show password!" />
-                                </Form.Group>
+                                </Form.Group> */}
                                 <div className="d-grid gap-2 mb-3">
                                     <Button variant={isLoginForm ? "primary" : "warning"} size="lg" type="submit" >
                                         {isLoginForm ? 'Login!' : 'Register!'}
