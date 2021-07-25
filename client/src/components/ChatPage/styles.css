@@ -19,10 +19,10 @@
 
 }
 
-.chatPageStyles .row {
+/* .chatPageStyles .row {
     /* outline: auto; */
     /* outline-color: red; */
-}
+/* } */ */
 
 .chatPageStyles .rowOne{
     height: 12%;
@@ -76,6 +76,23 @@
 
 
 
+.sendMsgBtn{
+    transition: .3s;
+}
+
+.sendMsgBtn:hover{
+    background-color: #464653;
+}
+
+
+.send-msg-spinner-cont{
+    margin-right: 90px;
+    margin-bottom: 80px;
+}
+.send-msg-spinner{
+    float: right;
+}
+
 
   /* scrollbar css */
   /* width */
@@ -97,3 +114,5 @@
   .chatPageStyles ::-webkit-scrollbar-thumb:hover {
     background: #555;
   }
+
+
