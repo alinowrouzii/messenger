@@ -9,11 +9,11 @@ import { Picker } from 'emoji-mart'
 import Profile from '../Utils/Profile/Profile';
 import './styles.css';
 import { useDispatch, useSelector } from 'react-redux';
-import { logout } from '../../actions/auth';
-import { getMe, getUserData, searchUsers } from '../../actions/user';
-import { getMessages, sendMessage } from '../../actions/message';
-import { getChats } from '../../actions/chat'
-import { SET_MESSAGE_READY, SET_CHATS_READY } from './../../actions/types';
+import { logout } from '../../store/actions/auth';
+import { getMe, getUserData, searchUsers } from '../../store/actions/user';
+import { getMessages, sendMessage } from '../../store/actions/message';
+import { getChats } from '../../store/actions/chat'
+import { SET_MESSAGE_READY, SET_CHATS_READY } from './../../store/actions/types';
 import { Animated } from "react-animated-css";
 
 const ChatPage = () => {
@@ -44,9 +44,12 @@ const ChatPage = () => {
 
     const [selectedChat, setSelectedChat] = useState(null);
 
-    const messages = useSelector(state => state.messageData.messages);
+    const fetchedMessages = useSelector(state => state.messageData.messages);
     const messagesInfo = useSelector(state => state.messageData.messageInfo)
     const messagesIsReady = useSelector(state => state.messageData.messagesIsReady);
+
+
+    const [messages, setMessages] = useState([]);
 
     const [sendingMsg, setSendingMsg] = useState(false);
 
@@ -87,28 +90,15 @@ const ChatPage = () => {
         });
     }, [])
 
-    const handleSendMessage = () => {
 
-        if (typedText.trim().length > 0) {
-            console.log("typed text", typedText.trim())
-
-            setSendingMsg(true);
-            setTypedText("")
-
-            dispatch(sendMessage(typedText.trim(), ownUser?._id, selectedChat?._id)).then(() => {
-                console.log('message sent')
-                setSendingMsg(false);
-            }).catch((err) => {
-                console.log(err)
-                setSendingMsg(false);
-
-                setModalTitle("Message sending Error");
-                setModalBodyText(messagesInfo);
-                setShowModal(true);
-            });
+    useEffect(() => {
+        if(fetchedMessages){
+            setMessages(fetchedMessages);
         }
+        setSendingMsg(false);
 
-    }
+    }, [fetchedMessages]);
+
 
     const handleSearchUsers = () => {
         if (!filteredUserIsActive) {
@@ -136,6 +126,58 @@ const ChatPage = () => {
             setsearchedUsersIsReady(false);
         }
     }
+
+
+
+    const handleSendMessage = () => {
+
+        if (typedText.trim().length > 0) {
+            console.log("typed text", typedText.trim())
+
+            setSendingMsg(true);
+            const typedTxt = typedText;
+            setTypedText("");
+
+            dispatch(sendMessage(typedText.trim(), ownUser?._id, selectedChat?._id)).then(() => {
+
+                // const newMsg = {
+                //     text: typedTxt,
+                //     sender: ownUser?._id,
+                //     chat: selectedChat?._id,
+                //     createdAt: new Date()
+                // }
+                // setMessages(prev => [...prev, newMsg]);
+
+                console.log('message sent');
+            }).catch((err) => {
+                console.log(err)
+                setSendingMsg(false);
+
+                setModalTitle("Message sending Error");
+                setModalBodyText(messagesInfo);
+                setShowModal(true);
+            });
+        }
+
+    }
+
+    const handleGetMessages = (chat) => (e) => {
+
+        setTypedText("");
+        setSelectedChat(chat);
+        dispatch(getMessages(chat._id))
+            .then(() => {
+                // console.log('fetched messages')'
+                console.log('In chatPage')
+            }).catch((err) => {
+                setModalTitle("Fetching message Error");
+                setModalBodyText(messagesInfo);
+                setShowModal(true);
+            });
+
+        console.log('i got chat', chat)
+    }
+
 
     const handleLogout = (e) => {
         dispatch(logout());
@@ -195,11 +237,7 @@ const ChatPage = () => {
                                 chats?.filter(chat => chat.users[0]._id === ownUser._id ? (chat.users[1].username.includes(fliteredUsersText)) : ((chat.users[0].username.includes(fliteredUsersText))))
                                     .map((chat) =>
                                         <div key={chat._id}
-                                            onClick={() => {
-                                                setTypedText("");
-                                                setSelectedChat(chat)
-                                                dispatch(getMessages(chat._id)).catch((err) => { setModalTitle("Fetching message Error"); setModalBodyText(messagesInfo); setShowModal(true) });
-                                            }}
+                                            onClick={handleGetMessages(chat)}
                                             className="mb-3"
                                         >
                                             <ProfileInfo chat={chat} />
