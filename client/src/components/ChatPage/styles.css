@@ -55,10 +55,36 @@
     margin-left: 25px;
 }
 
+
 .chatPageStyles .textarea {
-    height: 75px;
-    resize: none;
+    /* height: 20px; */
+    /* height: 75px; */
+    /* resize: none; */
+    box-sizing: border-box;
+    border: none;
+    border-radius: 3px;
+    resize: none ;
+    font-size: 20px;
+    line-height: 24px;
+    overflow: auto;
+    height: auto;
+    padding: 8px;
+    box-shadow: 0px 4px 10px -8px black;
   }
+
+
+
+  .chatPageStyles .textarea::placeholder{
+      color: gainsboro;
+  }
+
+  .chatPageStyles .textarea:focus{
+      outline: none;
+  }
+
+
+
+
 
   .chatPageStyles .messageSection{
       padding-top: 10px;
@@ -76,13 +102,15 @@
 
 
 
-.sendMsgBtn{
-    transition: .3s;
-}
+/* .sendMsgBtn{ */
+    /* height: 43px;; */
+    /* max-height: 55px; */
+/* } */
 
+/*
 .sendMsgBtn:hover{
     background-color: #464653;
-}
+} */
 
 
 .send-msg-spinner-cont{

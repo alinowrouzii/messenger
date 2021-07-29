@@ -25,6 +25,12 @@ const ChatPage = () => {
 
     const [typedText, setTypedText] = useState("");
 
+    const [chatTextareaRows, setChatTextareaRows] = useState({
+        rows: 1,
+        minRows: 1,
+        maxRows: 2,
+    });
+
     const [friendButtonSelected, setFriendButtonSelected] = useState(true);
     const [searchBarText, setSearchBarText] = useState("");
 
@@ -94,6 +100,7 @@ const ChatPage = () => {
             // window.alert('hey');
             socket.connect();
 
+            socket.removeAllListeners()
             socket.onAny((event, ...args) => {
                 console.log('-0-----------------')
                 console.log(event, args);
@@ -111,30 +118,45 @@ const ChatPage = () => {
                     ownUser.friends.filter((f) => users.some((u) => u._id === f._id))
                 );
             });
+
+            socket.on("getMessage", (data) => {
+
+                const newMsg = {
+                    sender: data.sender,
+                    text: data.text,
+                    // chat: selectedChat?._id,
+                    createdAt: Date.now(),
+                    _id: new Date().getUTCMilliseconds()
+                };
+                console.log('text', data.text)
+                console.log("messages added", data.sender, "---", selectedChat)
+                console.log('query', selectedChat?.users.some(user => user._id === data.sender))
+                selectedChatRef.current?.users.some(user => user._id === data.sender) && setMessages(prev => [...prev, newMsg]);
+            });
         }
 
     }, [ownUserIsReady])
 
-    useEffect(() => {
+    // useEffect(() => {
 
-        console.log('runneddddddd')
-        socket.on("getMessage", (data) => {
+    //     console.log('runneddddddd')
+    //     socket.on("getMessage", (data) => {
 
-            const newMsg = {
-                sender: data.sender,
-                text: data.text,
-                // chat: selectedChat?._id,
-                createdAt: Date.now(),
-                _id: new Date().getUTCMilliseconds()
-            };
-            console.log('text', data.text)
-            console.log("messages added", data.sender, "---", selectedChat)
-            console.log('query', selectedChat?.users.some(user => user._id === data.sender))
-            selectedChatRef.current?.users.some(user => user._id === data.sender) && setMessages(prev => [...prev, newMsg]);
-        });
-    }, []);
+    //         const newMsg = {
+    //             sender: data.sender,
+    //             text: data.text,
+    //             // chat: selectedChat?._id,
+    //             createdAt: Date.now(),
+    //             _id: new Date().getUTCMilliseconds()
+    //         };
+    //         console.log('text', data.text)
+    //         console.log("messages added", data.sender, "---", selectedChat)
+    //         console.log('query', selectedChat?.users.some(user => user._id === data.sender))
+    //         selectedChatRef.current?.users.some(user => user._id === data.sender) && setMessages(prev => [...prev, newMsg]);
+    //     });
+    // }, []);
 
-    
+
     //******************************************************************************************************** */
 
 
@@ -250,6 +272,72 @@ const ChatPage = () => {
         // console.log('i got chat', chat)
     }
 
+
+
+    const handleTextareaChange = (event) => {
+        const textareaLineHeight = 24;
+        const { minRows, maxRows } = chatTextareaRows;
+
+        const previousRows = event.target.rows;
+        event.target.rows = minRows; // reset number of rows in textarea 
+
+        const currentRows = ~~(event.target.scrollHeight / textareaLineHeight);
+
+        if (currentRows === previousRows) {
+            event.target.rows = currentRows;
+        }
+
+        if (currentRows >= maxRows) {
+            event.target.rows = maxRows;
+            event.target.scrollTop = event.target.scrollHeight;
+        }
+
+        setTypedText(event.target.value);
+        setChatTextareaRows(prev => ({
+            ...prev,
+            rows: currentRows < maxRows ? currentRows : maxRows,
+        }))
+    }
+
+
+
+    // const handleMessageScroll = (e) => {
+    //     console.log('scroll');
+    // }
+
+
+    const throttle = (fn, wait) => {
+        var time = Date.now();
+        console.log('hello')
+        return function () {
+            if ((time + wait - Date.now()) < 0) {
+                fn();
+                time = Date.now();
+            }
+        }
+    }
+
+    const chatScrollRef = useRef(null);
+    const [goToBottomBtnShow, setGoToBottomBtnShow] = useState(false);
+    const throttleCallback = () => {
+        console.log('hey hey hey');
+        const scrollHeight = chatScrollRef.current.scrollHeight;
+        const scrollTop = chatScrollRef.current.scrollTop;
+        console.log(chatScrollRef.current.scrollTop);
+        console.log(chatScrollRef.current.scrollHeight);
+        console.log('--------------------------')
+        if (scrollHeight - scrollTop > 800) {
+            setGoToBottomBtnShow(true);
+        } else {
+            setGoToBottomBtnShow(false);
+
+        }
+    }
+
+    const handleGoToBottomBtn = (e) => {
+        scrollRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+
     const handleLogout = (e) => {
         dispatch(logout());
         socket.disconnect();
@@ -335,7 +423,8 @@ const ChatPage = () => {
                             {ownUserIsReady && chatsIsReady && selectedChat && messagesIsReady &&
 
                                 <div className={"chatSection " + (selectedChat && messagesIsReady && "shadow-lg rounded")}>
-                                    <div className="messageSection">
+                                    <div className="messageSection" ref={chatScrollRef} onScroll={throttle(throttleCallback, 500)}>
+                                        {/* <div className="messageSection" onScroll={handleMessageScroll}> */}
                                         {messages?.map((msg) =>
                                             <div ref={scrollRef} key={msg._id}>
                                                 <Message me={ownUser?._id == msg.sender} msg={msg} />
@@ -343,25 +432,36 @@ const ChatPage = () => {
                                         )}
                                         {sendingMsg &&
                                             <div ref={scrollRef} className="send-msg-spinner-cont">
-                                                <Spinner className="send-msg-spinner" animation="border" role="status">
+                                                <Spinner className="send-msg-spinner" animation="border" role="status" variant="primary">
                                                 </Spinner>
                                             </div>
                                         }
 
                                     </div>
-                                    <InputGroup className="sendSection">
-                                        {/* <Picker style={{ position: 'absolute', bottom: '10px', left: '10px' }} set='apple' onSelect={(e) => setTypedText(prevtext => (prevtext + e.native))} title='Pick your emoji…' emoji='point_up' emojiTooltip={true} /> */}
-                                        <FormControl as="textarea"
-                                            className="textarea"
-                                            onChange={(e) => setTypedText(e.target.value)}
-                                            value={typedText}
-                                            placeholder="type something"
-                                            styles={{ marginRight: "10px" }}
-                                        />
-                                        <Button onClick={handleSendMessage} className="shadow-none sendMsgBtn" variant="dark">
-                                            Send!
-                                        </Button>
-                                    </InputGroup>
+
+                                    <div>
+
+                                        <InputGroup className="sendSection">
+                                            {/* <Picker style={{ position: 'absolute', bottom: '10px', left: '10px' }} set='apple' onSelect={(e) => setTypedText(prevtext => (prevtext + e.native))} title='Pick your emoji…' emoji='point_up' emojiTooltip={true} /> */}
+                                            <FormControl as="textarea"
+                                                className="textarea"
+                                                onChange={handleTextareaChange}
+                                                // onChange={(e) => setTypedText(e.target.value)}
+                                                value={typedText}
+                                                placeholder="type something"
+                                                rows={chatTextareaRows.rows}
+                                            // styles={{ marginRight: "10px" }}
+                                            />
+
+                                            <Button onClick={handleSendMessage} className="shadow-none sendMsgBtn rounded ms-3 mb-0 text-white" variant="primary">
+                                                Send!
+                                            </Button>
+                                        </InputGroup>
+                                        {goToBottomBtnShow &&
+                                        <Button onClick={handleGoToBottomBtn} >
+                                            go to bottom
+                                        </Button>}
+                                    </div>
                                 </div>
                             }
                         </Animated>
