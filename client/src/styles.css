@@ -3,7 +3,9 @@
 
     /* background: linear-gradient(to right, #ffc0cb, #800080);  */
 
-    background: linear-gradient(to right, #65e2cb, #ad9bff);
+    /* background: linear-gradient(to left, #65e2cb, #ad9bff); */
+    
+    background: rgb(34, 174, 255);
     font-family: 'PT Sans', sans-serif;
     min-height:100vh;
 }
