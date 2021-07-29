@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
+import { useStateRef } from './../../utils'
 import { Container, Row, Col, InputGroup, Button, FormControl, Form, Modal, Alert, Spinner } from 'react-bootstrap';
 import ProfileInfo from './../Utils/ProfileInfo/ProfileInfo';
 import ProfileInfoWIthAddBtn from './../Utils/ProfileInfo/ProfileInfoWithAddBtn';
@@ -15,6 +16,8 @@ import { getMessages, sendMessage } from '../../store/actions/message';
 import { getChats } from '../../store/actions/chat'
 import { SET_MESSAGE_READY, SET_CHATS_READY } from './../../store/actions/types';
 import { Animated } from "react-animated-css";
+import socket from "./../../socket";
+import { URL } from '../../constants';
 
 const ChatPage = () => {
 
@@ -42,12 +45,16 @@ const ChatPage = () => {
     const chatMessageInfo = useSelector(state => state.chatsData.chatMessage);
 
 
-    const [selectedChat, setSelectedChat] = useState(null);
+    // const [selectedChat, setSelectedChat] = useState(null);
+    const [selectedChat, setSelectedChat, selectedChatRef] = useStateRef(null);
+
+
 
     const fetchedMessages = useSelector(state => state.messageData.messages);
     const messagesInfo = useSelector(state => state.messageData.messageInfo)
     const messagesIsReady = useSelector(state => state.messageData.messagesIsReady);
 
+    const [onlineUsers, setOnlineUsers] = useState([]);
 
     const [messages, setMessages] = useState([]);
 
@@ -77,6 +84,60 @@ const ChatPage = () => {
         }
     }, [isLoggedIn]);
 
+
+    //***********************************Socket implementation*********************************************** */
+
+    useEffect(() => {
+
+        if (ownUserIsReady) {
+
+            // window.alert('hey');
+            socket.connect();
+
+            socket.onAny((event, ...args) => {
+                console.log('-0-----------------')
+                console.log(event, args);
+                console.log('-0-----------------')
+            });
+
+            // socket.emit("whoami", (whoami) => {
+            //     window.alert('Im ' + whoami+ socket.request.session);
+            // })
+
+            socket.emit("addUser", ownUser?._id, ownUser?.name);
+
+            socket.on("getUsers", (users) => {
+                setOnlineUsers(
+                    ownUser.friends.filter((f) => users.some((u) => u._id === f._id))
+                );
+            });
+        }
+
+    }, [ownUserIsReady])
+
+    useEffect(() => {
+
+        console.log('runneddddddd')
+        socket.on("getMessage", (data) => {
+
+            const newMsg = {
+                sender: data.sender,
+                text: data.text,
+                // chat: selectedChat?._id,
+                createdAt: Date.now(),
+                _id: new Date().getUTCMilliseconds()
+            };
+            console.log('text', data.text)
+            console.log("messages added", data.sender, "---", selectedChat)
+            console.log('query', selectedChat?.users.some(user => user._id === data.sender))
+            selectedChatRef.current?.users.some(user => user._id === data.sender) && setMessages(prev => [...prev, newMsg]);
+        });
+    }, []);
+
+    
+    //******************************************************************************************************** */
+
+
     useEffect(() => {
         if (chats.length > 0) {
             console.log('chatsss', chats);
@@ -88,17 +149,15 @@ const ChatPage = () => {
             type: SET_MESSAGE_READY,
             payload: { isReady: false }
         });
-    }, [])
-
+    }, []);
 
     useEffect(() => {
-        if(fetchedMessages){
+        if (fetchedMessages) {
             setMessages(fetchedMessages);
         }
         setSendingMsg(false);
 
     }, [fetchedMessages]);
-
 
     const handleSearchUsers = () => {
         if (!filteredUserIsActive) {
@@ -127,8 +186,6 @@ const ChatPage = () => {
         }
     }
 
-
-
     const handleSendMessage = () => {
 
         if (typedText.trim().length > 0) {
@@ -136,9 +193,11 @@ const ChatPage = () => {
 
             setSendingMsg(true);
             const typedTxt = typedText;
+
             setTypedText("");
 
-            dispatch(sendMessage(typedText.trim(), ownUser?._id, selectedChat?._id)).then(() => {
+            dispatch(sendMessage(typedTxt.trim(), ownUser?._id, selectedChat?._id)).then(() => {
+                console.log('typeeeeed then', typedText);
 
                 // const newMsg = {
                 //     text: typedTxt,
@@ -147,6 +206,16 @@ const ChatPage = () => {
                 //     createdAt: new Date()
                 // }
                 // setMessages(prev => [...prev, newMsg]);
+
+
+                //********************Socket implementation******************* */
+                const reciever = selectedChat?.users[0]._id === ownUser?._id ? selectedChat?.users[1]._id : selectedChat?.users[0]._id;
+                socket.emit("sendMessage", {
+                    sender: ownUser?._id,
+                    receiver: reciever,
+                    text: typedTxt,
+                });
+                //********************Socket implementation******************* */
 
                 console.log('message sent');
             }).catch((err) => {
@@ -163,8 +232,11 @@ const ChatPage = () => {
 
     const handleGetMessages = (chat) => (e) => {
 
+
         setTypedText("");
         setSelectedChat(chat);
+        console.log(chat)
+        console.log('fucking chat selected')
         dispatch(getMessages(chat._id))
             .then(() => {
                 // console.log('fetched messages')'
@@ -175,12 +247,12 @@ const ChatPage = () => {
                 setShowModal(true);
             });
 
-        console.log('i got chat', chat)
+        // console.log('i got chat', chat)
     }
-
 
     const handleLogout = (e) => {
         dispatch(logout());
+        socket.disconnect();
     }
 
     return (
