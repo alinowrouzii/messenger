@@ -12,7 +12,7 @@ const initialState = { ownUser: null, ownUserMessage: "", ownUserIsReady: false,
 export default (state = initialState, action) => {
 
     const { type, payload } = action;
-    console.log(type, payload);
+    // console.log(type, payload);
 
     switch (type) {
         case FETCH_ME_SUCCESS:

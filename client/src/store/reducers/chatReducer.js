@@ -11,7 +11,7 @@ const initialState = { chats: [], chatMessage: "" , chatsIsReady:false };
 
 export default (state = initialState, action) => {
     const { type, payload } = action;
-    console.log(type, payload);
+    // console.log(type, payload);
 
     switch (type) {
         case CREATE_CHAT_SUCCESS:

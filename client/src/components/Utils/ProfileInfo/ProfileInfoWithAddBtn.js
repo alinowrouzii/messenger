@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Alert, Button, Modal, Spinner } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
-import { createChat, getChats } from '../../../actions/chat';
+import { createChat, getChats } from '../../../store/actions/chat';
 import img from "./../../../Images/no-profile.jpg";
 import './styles.css'
 const ProfileInfo = (props) => {
@@ -12,7 +12,6 @@ const ProfileInfo = (props) => {
     const [added, setAdded] = useState(false);
 
     const [loading, setLoading] = useState(false);
-
 
     const [showModal, setShowModal] = useState(false);
 
@@ -80,7 +79,6 @@ const ProfileInfo = (props) => {
                 </Modal>
             </div>
         </div>
-
     );
 };
 

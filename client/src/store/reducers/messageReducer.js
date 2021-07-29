@@ -11,7 +11,7 @@ const initialState = { messages: [], messageInfo: "", messagesIsReady: false };
 
 export default (state = initialState, action) => {
     const { type, payload } = action;
-    console.log(type, payload);
+    // console.log(type, payload);
 
     switch (type) {
         case SEND_MESSAGE_SUCCESS:

@@ -3,7 +3,7 @@ import storage from 'redux-persist/lib/storage' // defaults to localStorage for 
 import React, { useState, useEffect } from 'react';
 import { Row, Container, Form, Button, InputGroup, FormControl, ButtonGroup } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
-import { login, signup } from '../../actions/auth.js';
+import { login, signup } from '../../store/actions/auth.js';
 import { Animated } from "react-animated-css";
 import AnimateHeight from 'react-animate-height';
 

@@ -2,7 +2,7 @@
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import { useSelector } from 'react-redux';
 import { Provider } from "react-redux";
-import storePersistor from './store.js'
+import storePersistor from './store'
 import React, { useEffect, useState } from 'react';
 import About from './components/About/About';
 import Home from './components/Home/Home';
