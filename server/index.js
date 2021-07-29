@@ -6,6 +6,7 @@ import passport from 'passport';
 import session from 'express-session';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
+import { Server as socket } from 'socket.io';
 import userRoute from './route/user.js';
 import messageRoute from './route/message.js';
 import chatRoute from './route/chat.js';
@@ -20,11 +21,13 @@ app.use(cors({
   credentials: true,
 }));
 
-app.use(session({
+const sessionMiddleware = session({
   secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false
-}));
+});
+
+app.use(sessionMiddleware);
 
 app.use(cookieParser(process.env.SESSION_SECRET))
 app.use(passport.initialize());
@@ -44,4 +47,11 @@ app.use('/chat', chatRoute);
 app.use('/auth', authRoute);
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server is running on Port: ${PORT}`));
+let server = app.listen(PORT, () => console.log(`Server is running on Port: ${PORT}`));
+
+const io = new socket(server);
+
+
+import socketConfig from './socket/index.js';
+socketConfig(io, sessionMiddleware, passport);
+
