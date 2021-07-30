@@ -14,7 +14,7 @@ import { logout } from '../../store/actions/auth';
 import { getMe, getUserData, searchUsers } from '../../store/actions/user';
 import { getMessages, sendMessage } from '../../store/actions/message';
 import { getChats } from '../../store/actions/chat'
-import { SET_MESSAGE_READY, SET_CHATS_READY } from './../../store/actions/types';
+import { SET_MESSAGE_READY, SET_CHATS_READY, SET_ONLINE_USERS } from './../../store/actions/types';
 import { Animated } from "react-animated-css";
 import socket from "./../../socket";
 import { URL } from '../../constants';
@@ -116,6 +116,12 @@ const ChatPage = () => {
             socket.emit("addUser", ownUser?._id, ownUser?.name);
 
             socket.on("getUsers", (users) => {
+                dispatch({
+                    type: SET_ONLINE_USERS,
+                    payload: {
+                        onlineUsers: users
+                    }
+                })
                 setOnlineUsers(
                     ownUser.friends.filter((f) => users.some((u) => u._id === f._id))
                 );
