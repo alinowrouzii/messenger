@@ -4,6 +4,19 @@
 }
 
 
-.timeAgoNotMe{
-    margin-left: 80px;
+
+.my-msg-card-cont{
+    margin-right: 71px;
+}
+
+.user-msg-card-cont{
+    margin-left: 79px;
+}
+
+.my-card-cont{
+    border-radius: 10px;
+}
+
+.user-card-cont{
+    border-radius: 10px;
 }

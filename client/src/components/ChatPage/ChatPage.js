@@ -62,6 +62,8 @@ const ChatPage = () => {
 
     const [onlineUsers, setOnlineUsers] = useState([]);
 
+    const [friends, setFriends] = useState([]);
+
     const [messages, setMessages] = useState([]);
 
     const [sendingMsg, setSendingMsg] = useState(false);
@@ -217,6 +219,10 @@ const ChatPage = () => {
             const typedTxt = typedText;
 
             setTypedText("");
+            setChatTextareaRows(prev => ({
+                ...prev,
+                rows: 1,
+            }))
 
             dispatch(sendMessage(typedTxt.trim(), ownUser?._id, selectedChat?._id)).then(() => {
                 console.log('typeeeeed then', typedText);
@@ -334,6 +340,14 @@ const ChatPage = () => {
         }
     }
 
+
+    const handleTextareaKeyPress = (e) => {
+        if (e.keyCode === 13 && e.ctrlKey) {
+            handleSendMessage();
+        }
+    }
+
+
     const handleGoToBottomBtn = (e) => {
         scrollRef.current?.scrollIntoView({ behavior: "smooth" });
     }
@@ -384,7 +398,7 @@ const ChatPage = () => {
                                     placeholder="Enter userName" />
                                 <Button
                                     onClick={handleSearchUsers}
-                                    variant="dark"
+                                    variant="secondary"
                                     className="shadow-none sendMsgBtn"
                                 >
                                     {filteredUserIsActive ? "Cancel!" : "Search!"}
@@ -398,7 +412,7 @@ const ChatPage = () => {
                                     .map((chat) =>
                                         <div key={chat._id}
                                             onClick={handleGetMessages(chat)}
-                                            className="mb-3"
+                                            className="mb-1"
                                         >
                                             <ProfileInfo chat={chat} />
                                         </div>
@@ -425,11 +439,18 @@ const ChatPage = () => {
                                 <div className={"chatSection " + (selectedChat && messagesIsReady && "shadow-lg rounded")}>
                                     <div className="messageSection" ref={chatScrollRef} onScroll={throttle(throttleCallback, 500)}>
                                         {/* <div className="messageSection" onScroll={handleMessageScroll}> */}
-                                        {messages?.map((msg) =>
-                                            <div ref={scrollRef} key={msg._id}>
-                                                <Message me={ownUser?._id == msg.sender} msg={msg} />
+                                        {messages?.map((msg, i, messages) => {
+                                            let nextIsMe = false;
+                                            let nextIsUser = false;
+                                            if (i < messages.length - 1) {
+                                                nextIsMe = messages[i + 1].sender === ownUser?._id;
+                                                nextIsUser = !nextIsMe;
+                                            }
+                                            return <div ref={scrollRef} key={msg._id}>
+                                                {/* nextIsMe shows that next message belongs to ownUser or not */}
+                                                <Message nextIsMe={nextIsMe} nextIsUser={nextIsUser} me={ownUser?._id === msg.sender} msg={msg} />
                                             </div>
-                                        )}
+                                        })}
                                         {sendingMsg &&
                                             <div ref={scrollRef} className="send-msg-spinner-cont">
                                                 <Spinner className="send-msg-spinner" animation="border" role="status" variant="primary">
@@ -439,13 +460,14 @@ const ChatPage = () => {
 
                                     </div>
 
-                                    <div>
+                                    <div className="sendSection shadow-lg">
 
-                                        <InputGroup className="sendSection">
+                                        <InputGroup>
                                             {/* <Picker style={{ position: 'absolute', bottom: '10px', left: '10px' }} set='apple' onSelect={(e) => setTypedText(prevtext => (prevtext + e.native))} title='Pick your emoji…' emoji='point_up' emojiTooltip={true} /> */}
                                             <FormControl as="textarea"
                                                 className="textarea"
                                                 onChange={handleTextareaChange}
+                                                onKeyDown={handleTextareaKeyPress}
                                                 // onChange={(e) => setTypedText(e.target.value)}
                                                 value={typedText}
                                                 placeholder="type something"
@@ -457,10 +479,10 @@ const ChatPage = () => {
                                                 Send!
                                             </Button>
                                         </InputGroup>
-                                        {goToBottomBtnShow &&
-                                        <Button onClick={handleGoToBottomBtn} >
-                                            go to bottom
-                                        </Button>}
+                                        {/* {goToBottomBtnShow &&
+                                            <Button onClick={handleGoToBottomBtn} >
+                                                go to bottom
+                                            </Button>} */}
                                     </div>
                                 </div>
                             }

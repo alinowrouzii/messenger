@@ -5,7 +5,9 @@
 
     /* background: linear-gradient(to left, #65e2cb, #ad9bff); */
     
-    background: rgb(34, 174, 255);
+    /* background: rgb(34, 174, 255); */
+    background: white;
+    /* background: turquoise; */
     font-family: 'PT Sans', sans-serif;
     min-height:100vh;
 }

@@ -18,7 +18,7 @@ const ProfileInfo = (props) => {
     }, [ownUserIsReady]);
     
     return (
-        <div className="d-flex align-items-center main-cont rounded bg-info shadow-lg">
+        <div className="d-flex align-items-center main-cont rounded shadow-lg border-bottom border-2">
             <div className="flex-shrink-0 img-cont">
                 <img src={img} className="rounded-circle prof-img" alt="img" />
             </div>

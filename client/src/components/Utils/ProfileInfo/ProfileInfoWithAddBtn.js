@@ -36,7 +36,7 @@ const ProfileInfo = (props) => {
     }
 
     return (
-        <div className="d-flex align-items-center main-cont rounded bg-info shadow-lg">
+        <div className="d-flex align-items-center main-contt rounded shadow-lg">
             <div className="flex-shrink-0 img-cont">
                 <img src={img} className="rounded-circle prof-img" alt="img" />
             </div>

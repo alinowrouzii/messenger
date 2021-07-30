@@ -50,7 +50,7 @@ const MyProfileInfo = () => {
                     <img src={img} className="rounded-circle prof-img" alt="img" />
                 </div>
             </OverlayTrigger>
-            <div className="flex-grow-1 ms-3 shadow-lg testt rounded">
+            <div className="flex-grow-1 ms-3  testt rounded">
                 name:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                 {toggle ? (
                     <span onDoubleClick={() => { setToggle(false) }}>

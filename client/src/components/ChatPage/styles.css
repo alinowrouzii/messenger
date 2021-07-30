@@ -51,6 +51,7 @@
 .chatPageStyles .sendSection{
     position: absolute;
     width: 90%;
+    /* height: 100px; */
     bottom: 10px;
     margin-left: 25px;
 }
@@ -99,7 +100,13 @@
   }
 
 
-
+  body.modal-open > :not(.modal) {
+    -webkit-filter: blur(4px);
+    -moz-filter: blur(1px);
+    -o-filter: blur(1px);
+    -ms-filter: blur(1px);
+    filter: blur(3px);
+}
 
 
 /* .sendMsgBtn{ */

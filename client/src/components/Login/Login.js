@@ -54,7 +54,7 @@ const Login = () => {
     return (
         <Container className="loginReg-cont">
             <Row>
-                <Container className="loginReg-row shadow-lg" >
+                <Container className="loginReg-row shadow-lg" styles={{backgroundColor:'#3581eb'}}>
 
                     <div className="loginForm-cont shadow-lg">
                         <div>

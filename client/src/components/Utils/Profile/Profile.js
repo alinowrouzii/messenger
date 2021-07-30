@@ -5,35 +5,62 @@ import { format } from 'timeago.js';
 import img from './../../../Images/no-profile.jpg'
 const Profile = (props) => {
     return (
-        <Card
-            style={{ width: 'auto', padding: "20px", backgroundColor: "cyan", marginTop: "20px" }}
-            className="shadow-lg"
-        >
-            <Card.Img as={Image} variant="top" src={img} roundedCircle />
-            <Card.Body>
-                <Card.Title style={{ textAlign: "center" }}>
-                    {props.user.name}
-                </Card.Title>
-                <Card.Text style={{ textAlign: "left" }}>
-                    <strong>
-                        Username:
-                    </strong> @{props.user.username}
-                </Card.Text>
-                <Card.Text style={{ textAlign: "left" }}>
-                    <strong>
-                        Joined at:
-                    </strong> {format(props.user.createdAt)}
-                </Card.Text>
-            </Card.Body>
-            <Card.Body>
-                <Card.Title style={{ textAlign: "center" }}>
-                    About:
-                </Card.Title>
-                <Card.Text style={{ textAlign: "left" }}>
-                    I'm ali nowrouzi
-                </Card.Text>
-            </Card.Body>
-        </Card>
+        <div>
+            <div className='justify-content-center d-flex'>
+                <Image variant="top" src={img} roundedCircle className='border' />
+            </div>
+            <div>
+
+                <Card
+                    style={{ width: 'auto', marginTop: "20px" }}
+                    className="shadow-lg user-select-none bg-transparent"
+                >
+                    <Card.Body>
+                        <Card.Title className='shadow-lg p-2 mb-2'>
+                            <strong>
+                                Name:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            </strong>
+                            {props.user.name}
+                        </Card.Title>
+                        <Card.Text
+                            className='shadow-lg p-2 mb-2'
+                            style={{ textAlign: "left" }}>
+                            <strong>
+                                Username:
+                            </strong> @{props.user.username}
+                        </Card.Text>
+                        <Card.Text
+                            className='shadow-lg p-2 mb-2'
+                            style={{ textAlign: "left" }}>
+                            <strong>
+                                Joined at:&nbsp;&nbsp;
+                            </strong> {format(props.user.createdAt)}
+                        </Card.Text>
+                        <Card.Text
+                            className='shadow-lg p-2 mb-2'
+                            style={{ textAlign: "left" }}>
+                            <strong>
+                                About:&nbsp;&nbsp;&nbsp;&nbsp;
+                            </strong>
+                            I'm ali nowrouzi
+                        </Card.Text>
+
+                    </Card.Body>
+                    {/* <Card.Body
+                        className='shadow-lg p-2'
+                    >
+                        <Card.Title>
+                            <strong>
+                                About:&nbsp;&nbsp;&nbsp;&nbsp;
+                            </strong>
+                            I'm ali nowrouzi
+                        </Card.Title>
+
+                    </Card.Body> */}
+                </Card>
+            </div>
+        </div>
+
     );
 };
 
