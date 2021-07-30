@@ -4,10 +4,11 @@ import {
     SET_OWN_USER_READY,
     SEARCH_USER_SUCCESS,
     SEARCH_USER_FAIL,
+    SET_ONLINE_USERS,
     LOGOUT
 } from "../actions/types";
 
-const initialState = { ownUser: null, ownUserMessage: "", ownUserIsReady: false, searchedUsers: [] };
+const initialState = { ownUser: null, ownUserMessage: "", ownUserIsReady: false, searchedUsers: [], onlineUsers: [] };
 
 export default (state = initialState, action) => {
 
@@ -41,6 +42,11 @@ export default (state = initialState, action) => {
             return {
                 ...state,
                 ownUserMessage: payload.message
+            }
+        case SET_ONLINE_USERS:
+            return {
+                ...state,
+                onlineUsers: payload.onlineUsers
             }
         // case FETCH_CONTACT_USERS_SUCCESS:
         //     return {
