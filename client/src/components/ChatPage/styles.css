@@ -63,6 +63,8 @@
     /* resize: none; */
     box-sizing: border-box;
     border: none;
+    border-bottom: 1px solid #1890ff;
+    border-width: 4px;
     border-radius: 3px;
     resize: none ;
     font-size: 20px;
@@ -71,8 +73,14 @@
     height: auto;
     padding: 8px;
     box-shadow: 0px 4px 10px -8px black;
-  }
+    
+}
 
+.chatPageStyles .search-textarea {
+    border-bottom: 1px solid #1890ff;
+    border-width: thin;
+    
+}
 
 
   .chatPageStyles .textarea::placeholder{
