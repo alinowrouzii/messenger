@@ -40,6 +40,11 @@
     top: 2px;
 }
 
+.notif-icon{
+    width: 40px;
+    height: auto;
+}
+
 
 .set-img-undragable {
     -webkit-user-drag: none;
