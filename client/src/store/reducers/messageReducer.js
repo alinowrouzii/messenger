@@ -4,10 +4,13 @@ import {
     GET_MESSAGES_SUCCESS,
     GET_MESSAGES_FAIL,
     SET_MESSAGE_READY,
-    LOGOUT
+    ADD_NEW_MESSAGE_NOTIF,
+    LOGOUT,
+    REMOVE_NEW_MESSAGE_NOTIF,
+    SET_NEW_MESSAGE_NOTIF
 } from "../actions/types";
 
-const initialState = { messages: [], messageInfo: "", messagesIsReady: false };
+const initialState = { messages: [], messageInfo: "", messagesIsReady: false, newMessagesNotification: [] };
 
 export default (state = initialState, action) => {
     const { type, payload } = action;
@@ -40,6 +43,26 @@ export default (state = initialState, action) => {
             return {
                 ...state,
                 messagesIsReady: payload.isReady
+            };
+        case SET_NEW_MESSAGE_NOTIF:
+            return {
+                ...state,
+                newMessagesNotification: payload.users
+            };
+        case ADD_NEW_MESSAGE_NOTIF:
+            let user = state.newMessagesNotification.find(el => el === payload.user);
+
+            if (user) {
+                return state;
+            }
+            return {
+                ...state,
+                newMessagesNotification: [...state.newMessagesNotification, payload.user]
+            };
+        case REMOVE_NEW_MESSAGE_NOTIF:
+            return {
+                ...state,
+                newMessagesNotification: state.newMessagesNotification.filter(el => el !== payload.user)
             };
         case LOGOUT:
             return initialState;
