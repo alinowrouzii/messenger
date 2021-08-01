@@ -4,6 +4,7 @@ import { Container, Row, Col, InputGroup, Button, FormControl, Form, Modal, Aler
 import ProfileInfo from './../Utils/ProfileInfo/ProfileInfo';
 import ProfileInfoWIthAddBtn from './../Utils/ProfileInfo/ProfileInfoWithAddBtn';
 import Message from './../Utils/Message/Message'
+import Navbar from './../Navbar/Navbar'
 import MyProfileInfo from './../Utils/MyProfileInfo/MyProfileInfo'
 import 'emoji-mart/css/emoji-mart.css'
 import { Picker } from 'emoji-mart'
@@ -14,10 +15,11 @@ import { logout } from '../../store/actions/auth';
 import { getMe, getUserData, searchUsers } from '../../store/actions/user';
 import { getMessages, sendMessage } from '../../store/actions/message';
 import { getChats } from '../../store/actions/chat'
-import { SET_MESSAGE_READY, SET_CHATS_READY, SET_ONLINE_USERS } from './../../store/actions/types';
+import { SET_MESSAGE_READY, SET_CHATS_READY, SET_ONLINE_USERS, SET_NEW_MESSAGE_NOTIF, ADD_NEW_MESSAGE_NOTIF, REMOVE_NEW_MESSAGE_NOTIF } from './../../store/actions/types';
 import { Animated } from "react-animated-css";
 import socket from "./../../socket";
 import { URL } from '../../constants';
+import { format } from 'timeago.js';
 
 const ChatPage = () => {
 
@@ -99,14 +101,13 @@ const ChatPage = () => {
 
         if (ownUserIsReady) {
 
-            // window.alert('hey');
             socket.connect();
+            socket.removeAllListeners();
 
-            socket.removeAllListeners()
             socket.onAny((event, ...args) => {
-                console.log('-0-----------------')
+                console.log('-0-----------------');
                 console.log(event, args);
-                console.log('-0-----------------')
+                console.log('-0-----------------');
             });
 
             // socket.emit("whoami", (whoami) => {
@@ -115,16 +116,27 @@ const ChatPage = () => {
 
             socket.emit("addUser", ownUser?._id, ownUser?.name);
 
+            console.log('shiiiiiiiiiiiiiiiiiiiiiiiiiiiiittttttttt');
+            console.log(new Date());
+
             socket.on("getUsers", (users) => {
                 dispatch({
                     type: SET_ONLINE_USERS,
+
                     payload: {
                         onlineUsers: users
+                        //it is also possible to handle this filter in the socket side and socket returns filtered user
+                        // onlineUsers: ownUser?.friends.filter((f) => users.some((u) => u._id === f))
                     }
                 })
                 setOnlineUsers(
                     ownUser.friends.filter((f) => users.some((u) => u._id === f._id))
                 );
+            });
+            socket.on("connect_error", (err) => {
+                console.log('connect_error due to' + err.message);
+                socket.removeAllListeners()
+                socket.disconnect();
             });
 
             socket.on("getMessage", (data) => {
@@ -138,8 +150,19 @@ const ChatPage = () => {
                 };
                 console.log('text', data.text)
                 console.log("messages added", data.sender, "---", selectedChat)
-                console.log('query', selectedChat?.users.some(user => user._id === data.sender))
+                console.log('query', selectedChat?.users.some(user => user._id === data.sender));
+
+
                 selectedChatRef.current?.users.some(user => user._id === data.sender) && setMessages(prev => [...prev, newMsg]);
+
+                !(selectedChatRef.current?.users.some(user => user._id === data.sender))
+                    && dispatch({
+                        type: ADD_NEW_MESSAGE_NOTIF,
+                        payload: {
+                            //data.sender is id of sender
+                            user: data.sender
+                        }
+                    })
             });
         }
 
@@ -274,7 +297,14 @@ const ChatPage = () => {
         dispatch(getMessages(chat._id))
             .then(() => {
                 // console.log('fetched messages')'
-                console.log('In chatPage')
+                console.log('In chatPage');
+
+                dispatch({
+                    type: REMOVE_NEW_MESSAGE_NOTIF,
+                    payload: {
+                        user: (ownUser?._id === chat.users[0]._id) ? chat.users[1]._id : chat.users[0]._id
+                    }
+                })
             }).catch((err) => {
                 setModalTitle("Fetching message Error");
                 setModalBodyText(messagesInfo);
@@ -360,22 +390,25 @@ const ChatPage = () => {
 
     const handleLogout = (e) => {
         dispatch(logout());
+        socket.removeAllListeners();
         socket.disconnect();
     }
 
     return (
         <>
             <Container className="mainContainer chatPageStyles" fluid>
-                <Row className="rowOne mb-3">
-                    <Col lg={4} style={{ marginTop: "15px", marginBottom: "10px" }}>
-                        <MyProfileInfo />
+                <Row className="rowOne mb-3 bg-primary text-white p-2">
+                    <Col className='' lg={10} style={{ marginTop: "15px", marginBottom: "10px" }}>
+                        <Navbar logout={handleLogout} />
+
+                        {/* <Button onClick={handleLogout}>logout</Button> */}
                     </Col>
-                    <Col lg={8}>
-                        <Button onClick={handleLogout}>logout</Button>
+                    <Col className='' lg={2} style={{ marginTop: "15px", marginBottom: "10px" }}>
+                        <MyProfileInfo />
                     </Col>
                 </Row>
                 <Row className="rowTwo">
-                    <Col lg={2} className="shadow-lg rounded">
+                    <Col lg={2} sm={4} className="shadow-lg rounded">
                         <Row>
 
                             <InputGroup className="mb-2">
@@ -401,11 +434,12 @@ const ChatPage = () => {
                                     onChange={(e) => setSearchBarText(e.target.value)}
                                     value={searchBarText}
                                     aria-label="Enter the username!"
+                                    className="textarea search-textarea"
                                     placeholder="Enter userName" />
                                 <Button
                                     onClick={handleSearchUsers}
                                     variant="secondary"
-                                    className="shadow-none sendMsgBtn"
+                                    className="shadow-none sendMsgBtn ms-1"
                                 >
                                     {filteredUserIsActive ? "Cancel!" : "Search!"}
                                 </Button>
@@ -435,7 +469,7 @@ const ChatPage = () => {
                         </Row>
                     </Col>
 
-                    <Col lg={8}>
+                    <Col lg={8} sm={8}>
                         {/* {selectedChat && messagesIsReady && */}
                         {/* Add some extra condition to load messages and profile info in the same time */}
 
