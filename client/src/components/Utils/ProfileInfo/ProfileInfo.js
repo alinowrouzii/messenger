@@ -18,6 +18,8 @@ const ProfileInfo = (props) => {
 
     const newMsgNotif = useSelector(state => state.messageData.newMessagesNotification);
 
+    const typingUsers = useSelector(state => state.userData.typingUsers);
+
     const chat = props.chat;
 
     const [userInfo, setUserInfo] = useState(null);
@@ -28,28 +30,46 @@ const ProfileInfo = (props) => {
         )
     }, [ownUserIsReady]);
 
+
+    // useEffect(() => {
+
+    //     window.alert('type userinfo ' + typingUsers);
+    // }, [typingUsers]);
+
+
     return (
         <div className="d-flex align-items-center main-cont rounded shadow-lg border-bottom border-2">
             <div className="flex-shrink-0 img-cont user-select-none">
                 <img src={img} className="rounded-circle prof-img set-img-undragable" alt="img" />
 
+
                 {onlineUsers?.some(u => u._id === userInfo?._id) &&
-                    <img src={onlineIcon} className="online-icon set-img-undragable" alt="img" />}
+                    <img src={onlineIcon} className="online-icon set-img-undragable" alt="img" />
+                }
             </div>
             <div className="flex-grow-1 ms-3">
-                {ownUserIsReady ? userInfo?.name : "loading"}<br />
-                <p>
-                    {/* {onlineUsers?.some(u => u._id === userInfo?._id) && 'online'} */}
-
-                </p>
-            </div>
-            {newMsgNotif.some(u=> userInfo?._id === u) &&
-                <div className="flex-grow-1 ms-3 me-2">
-                    <div className="float-end">
-                        <img src={newMsgIcon} className="notif-icon set-img-undragable" alt="img" />
-                    </div>
+                <div>
+                    <strong>
+                        {ownUserIsReady ? userInfo?.name : "loading"}
+                    </strong>
                 </div>
-            }
+
+                {/* &nbsp;&nbsp;&nbsp;&nbsp;  */}
+                <div className="user-select-none text-muted istyping-cont">
+                    {typingUsers?.some(u => u == userInfo?._id) &&
+                        'is typing...'
+                    }
+                </div>
+
+            </div>
+
+            <div className="d-flex justify-content-center ms-3 me-2 notif-icon-cont-outer">
+                <div className="float-end notif-icon-cont-inner align-self-center">
+                    {newMsgNotif.some(u => userInfo?._id === u) &&
+                        <img src={newMsgIcon} className="notif-icon set-img-undragable notif-icon-cont" alt="img" />
+                    }
+                </div>
+            </div>
         </div>
     );
 };
