@@ -5,10 +5,12 @@ import {
     SEARCH_USER_SUCCESS,
     SEARCH_USER_FAIL,
     SET_ONLINE_USERS,
-    LOGOUT
+    LOGOUT,
+    ADD_TYPING_USER,
+    REMOVE_TYPING_USER
 } from "../actions/types";
 
-const initialState = { ownUser: null, ownUserMessage: "", ownUserIsReady: false, searchedUsers: [], onlineUsers: [] };
+const initialState = { ownUser: null, ownUserMessage: "", ownUserIsReady: false, searchedUsers: [], onlineUsers: [], typingUsers: [] };
 
 export default (state = initialState, action) => {
 
@@ -47,6 +49,16 @@ export default (state = initialState, action) => {
             return {
                 ...state,
                 onlineUsers: payload.onlineUsers
+            }
+        case ADD_TYPING_USER:
+            return {
+                ...state,
+                typingUsers: [...state.typingUsers, payload.user]
+            }
+        case REMOVE_TYPING_USER:
+            return {
+                ...state,
+                typingUsers: state.typingUsers.filter(u => u !== payload.user)
             }
         // case FETCH_CONTACT_USERS_SUCCESS:
         //     return {
