@@ -15,11 +15,16 @@ import { logout } from '../../store/actions/auth';
 import { getMe, getUserData, searchUsers } from '../../store/actions/user';
 import { getMessages, sendMessage } from '../../store/actions/message';
 import { getChats } from '../../store/actions/chat'
-import { SET_MESSAGE_READY, SET_CHATS_READY, SET_ONLINE_USERS, SET_NEW_MESSAGE_NOTIF, ADD_NEW_MESSAGE_NOTIF, REMOVE_NEW_MESSAGE_NOTIF } from './../../store/actions/types';
+import { SET_MESSAGE_READY, SET_CHATS_READY, SET_ONLINE_USERS, SET_NEW_MESSAGE_NOTIF, ADD_NEW_MESSAGE_NOTIF, REMOVE_NEW_MESSAGE_NOTIF, ADD_TYPING_USER, REMOVE_TYPING_USER } from './../../store/actions/types';
 import { Animated } from "react-animated-css";
 import socket from "./../../socket";
 import { URL } from '../../constants';
 import { format } from 'timeago.js';
+import ReactPlayer from 'react-player';
+import ReactAudioPlayer from 'react-audio-player';
+import _ from 'underscore';
+
+import music from './../../music.mp3'
 
 const ChatPage = () => {
 
@@ -163,6 +168,26 @@ const ChatPage = () => {
                             user: data.sender
                         }
                     })
+            });
+
+            socket.on('isTyping', (data) => {
+                // window.alert('add user');
+                dispatch({
+                    type: ADD_TYPING_USER,
+                    payload: {
+                        user: data.typingUser
+                    }
+                })
+            });
+            
+            socket.on('stopTyping', (data) => {
+                // window.alert('remove user');
+                dispatch({
+                    type: REMOVE_TYPING_USER,
+                    payload: {
+                        user: data.typingUser
+                    }
+                })
             });
         }
 
@@ -315,8 +340,47 @@ const ChatPage = () => {
     }
 
 
+    const deb = useRef();
+    const [isTyping, setTyping, isTypingRef] = useStateRef(false);
+
+    useEffect(() => {
+        if (ownUserIsReady) {
+
+            deb.current = _.debounce(function () {
+                // window.alert('stop clicking...');
+
+                if (isTypingRef.current) {
+                    setTyping(false);
+                    //TODO 
+                    if (!ownUser) {
+                        window.alert('shit')
+                    }
+                    const reciever = selectedChatRef.current?.users[0]._id === ownUser?._id ? selectedChatRef.current?.users[1]._id : selectedChatRef.current?.users[0]._id;
+
+                    if (reciever) {
+                        socket.emit('stopTyping', reciever);
+                    } else {
+                        window.alert('shiiiiiiiiit')
+
+                    }
+                }
+            }, 2000);
+        }
+    }, [ownUserIsReady])
 
     const handleTextareaChange = (event) => {
+
+        //means we should send isTyping to specified user from socket
+        if (!isTypingRef.current) {
+            setTyping(true);
+            const reciever = selectedChat?.users[0]._id === ownUser?._id ? selectedChat?.users[1]._id : selectedChat?.users[0]._id;
+
+            if (reciever) {
+                socket.emit('isTyping', reciever);
+            }
+        }
+        deb.current();
+
         const textareaLineHeight = 24;
         const { minRows, maxRows } = chatTextareaRows;
 
@@ -338,13 +402,17 @@ const ChatPage = () => {
         setChatTextareaRows(prev => ({
             ...prev,
             rows: currentRows < maxRows ? currentRows : maxRows,
-        }))
+        }));
+
+
+
     }
 
 
 
+
     // const handleMessageScroll = (e) => {
-    //     console.log('scroll');
+    console.log('scroll');
     // }
 
 
@@ -497,6 +565,17 @@ const ChatPage = () => {
                                                 </Spinner>
                                             </div>
                                         }
+
+                                        <div>
+
+                                            {/* <ReactPlayer url={videoFilePath} width="100%" height="100%" controls={true} /> */}
+
+                                            {/* <ReactAudioPlayer
+                                                className='bg-dark'
+                                                src={music}
+                                                controls
+                                            /> */}
+                                        </div>
 
                                     </div>
 
