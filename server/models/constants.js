@@ -1,0 +1,2 @@
+export const TEXT_MESSAGE_TYPE = 'TEXT_MESSAGE'
+export const AUDIO_MESSAGE_TYPE = 'AUDIO_MESSAGE'
