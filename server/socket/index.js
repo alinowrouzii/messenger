@@ -50,17 +50,17 @@ const socketConfig = (io, sessionMiddleware, passport) => {
         });
 
         //TODO: get userId from session and then add user with that id
-        socket.on("addUser", (userId, name) => {
-            //try to add user
-            console.log('--------try to add user---------')
-            console.log(new Date());
-            console.log(users);
-            console.log('type of userId', typeof userId);
-            addUser(userId, socket.id, name);
-            console.log(users);
-            console.log('--------------------------------')
-            io.emit("getUsers", users);
-        });
+        // socket.on("addUser", (userId, name) => {
+        //     //try to add user
+        //     console.log('--------try to add user---------')
+        //     console.log(new Date());
+        //     console.log(users);
+        //     console.log('type of userId', typeof userId);
+        //     addUser(userId, socket.id, name);
+        //     console.log(users);
+        //     console.log('--------------------------------')
+        //     io.emit("getUsers", users);
+        // });
 
 
         socket.on("isTyping", (receiver) => {
@@ -87,6 +87,23 @@ const socketConfig = (io, sessionMiddleware, passport) => {
             }
         });
 
+        socket.on("send-audio", ({ buffer, reciever }) => {
+            const user = getUser(reciever);
+            const ownUser = socket.request.user;
+            // console.log('ownuser', ownUser);
+            if (user) {
+                console.log('sending audio file')
+                io.to(user.socketId).emit("get-audio", {
+                    sender: ownUser._id.toString(),
+                    buffer
+                });
+            }
+        });
+
+
+
+
+
 
 
         // socket.on("disconnect", () => console.log("closed connection\n-------------------------------"))
@@ -111,11 +128,25 @@ const socketConfig = (io, sessionMiddleware, passport) => {
             io.emit("getUsers", users);
         });
 
-        //It should be removed i think!!
+
+        //try to add user
+        console.log('--------try to add user---------');
+
         const session = socket.request.session;
         console.log(`saving sid ${socket.id} in session ${session.id}`);
         session.socketId = socket.id;
         session.save();
+
+        console.log(new Date());
+        console.log(users);
+        const ownUser = socket.request.user;
+        const userId = ownUser._id.toString();
+        const name = ownUser.name;
+        console.log('type of userId', typeof userId);
+        addUser(userId, socket.id, name);
+        console.log(users);
+        console.log('--------------------------------')
+        io.emit("getUsers", users);
     });
 }
 
