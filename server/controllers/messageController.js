@@ -1,11 +1,12 @@
 import mongoose from 'mongoose';
 import Chat from "../models/Chat.js";
-import Message from "../models/Message.js";
+import { AUDIO_MESSAGE_TYPE, TEXT_MESSAGE_TYPE } from '../models/constants.js';
+import Message, { AudioMessage, TextMessage } from "../models/Message.js";
 import User from "../models/User.js";
 
 export const sendMessage = async (req, res) => {
 
-    const { text, sender, chat } = req.body;
+    const { data, sender, chat, msg_type } = req.body;
 
     try {
         const senderId = mongoose.Types.ObjectId(sender);
@@ -19,7 +20,13 @@ export const sendMessage = async (req, res) => {
 
                     if (fetchedChat.users.some(element => senderId.equals(element))) {//sender is member of that chat or not
 
-                        const msg = new Message({ text, sender: senderId, chat: chatId });
+                        let msg = null;
+                        if (msg_type === TEXT_MESSAGE_TYPE) {
+                            msg = new TextMessage({ data, sender: senderId, chat: chatId });
+                        } else if (msg_type === AUDIO_MESSAGE_TYPE ) {
+                            msg = new AudioMessage({ data, sender: senderId, chat: chatId });
+                        }
+
                         await msg.save();
                         return res.status(201).json({
                             messageInfo: 'Message sent!',
@@ -65,6 +72,7 @@ export const getMessages = async (req, res) => {
                 return res.status(404).json({ messageInfo: 'This chat not found in your chat list!!' })
             }
         } catch (err) {
+            console.log(err)
             return res.status(502).json({ messageInfo: 'DataBase error!' });
         }
 
