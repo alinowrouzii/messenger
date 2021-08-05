@@ -24,7 +24,8 @@ import ReactPlayer from 'react-player';
 import ReactAudioPlayer from 'react-audio-player';
 import _ from 'underscore';
 
-import music from './../../music.mp3'
+import scrollDownIcon from './../../Images/scroll-down.png'
+import useRecorder from '../../utils/useRecorder';
 
 const ChatPage = () => {
 
@@ -79,9 +80,20 @@ const ChatPage = () => {
     const [modalTitle, setModalTitle] = useState("");
     const [modalBodyText, setModalBodyText] = useState("");
 
+
+
+    const chatScrollRef = useRef();
+    const [scrollToBottomShow, setScrollToBottom, scrollToBottomRef] = useStateRef(false);
+
+    const scrollToBottomDebounce = useRef();
+
+    const [audioURL, isRecording, startRecording, stopRecording, audioChunk, setAudioURL] = useRecorder();
+
+
     const scrollRef = useRef();
     useEffect(() => {
         scrollRef.current?.scrollIntoView({ behavior: "smooth" });
+        setScrollToBottom(false);
     }, [messages, messagesIsReady, sendingMsg]);
 
     useEffect(() => {
@@ -144,31 +156,33 @@ const ChatPage = () => {
                 socket.disconnect();
             });
 
-            socket.on("getMessage", (data) => {
+            socket.on("getMessage", (res) => {
 
                 const newMsg = {
-                    sender: data.sender,
-                    text: data.text,
+                    sender: res.sender,
+                    data: res.data,
                     // chat: selectedChat?._id,
+                    kind: res.kind,
                     createdAt: Date.now(),
                     _id: new Date().getUTCMilliseconds()
                 };
-                console.log('text', data.text)
-                console.log("messages added", data.sender, "---", selectedChat)
-                console.log('query', selectedChat?.users.some(user => user._id === data.sender));
+                console.log('text', res.data)
+                console.log("messages added", res.sender, "---", selectedChat)
+                console.log('query', selectedChat?.users.some(user => user._id === res.sender));
 
 
-                selectedChatRef.current?.users.some(user => user._id === data.sender) && setMessages(prev => [...prev, newMsg]);
+                selectedChatRef.current?.users.some(user => user._id === res.sender) && setMessages(prev => [...prev, newMsg]);
 
-                !(selectedChatRef.current?.users.some(user => user._id === data.sender))
+                !(selectedChatRef.current?.users.some(user => user._id === res.sender))
                     && dispatch({
                         type: ADD_NEW_MESSAGE_NOTIF,
                         payload: {
                             //data.sender is id of sender
-                            user: data.sender
+                            user: res.sender
                         }
                     })
             });
+
 
             socket.on('isTyping', (data) => {
                 // window.alert('add user');
@@ -179,7 +193,7 @@ const ChatPage = () => {
                     }
                 })
             });
-            
+
             socket.on('stopTyping', (data) => {
                 // window.alert('remove user');
                 dispatch({
@@ -189,6 +203,12 @@ const ChatPage = () => {
                     }
                 })
             });
+
+            socket.on('get-audio', ({ sender, buffer }) => {
+                const blob = new Blob([buffer], { 'type': 'audio/ogg; codecs=opus' });
+
+                setAudioURL(window.URL.createObjectURL(blob));
+            })
         }
 
     }, [ownUserIsReady])
@@ -278,7 +298,7 @@ const ChatPage = () => {
                 rows: 1,
             }))
 
-            dispatch(sendMessage(typedTxt.trim(), ownUser?._id, selectedChat?._id)).then(() => {
+            dispatch(sendMessage(typedTxt.trim(), ownUser?._id, selectedChat?._id, 'TEXT_MESSAGE')).then(() => {
                 console.log('typeeeeed then', typedText);
 
                 // const newMsg = {
@@ -293,9 +313,10 @@ const ChatPage = () => {
                 //********************Socket implementation******************* */
                 const reciever = selectedChat?.users[0]._id === ownUser?._id ? selectedChat?.users[1]._id : selectedChat?.users[0]._id;
                 socket.emit("sendMessage", {
-                    sender: ownUser?._id,
+                    // sender: ownUser?._id,
                     receiver: reciever,
-                    text: typedTxt,
+                    data: typedTxt,
+                    kind: 'TEXT_MESSAGE'
                 });
                 //********************Socket implementation******************* */
 
@@ -416,33 +437,37 @@ const ChatPage = () => {
     // }
 
 
-    const throttle = (fn, wait) => {
-        var time = Date.now();
-        console.log('hello')
-        return function () {
-            if ((time + wait - Date.now()) < 0) {
-                fn();
-                time = Date.now();
+
+
+    useEffect(() => {
+        scrollToBottomDebounce.current = _.debounce(function () {
+
+            // window.alert('heh'+scrollToBottomRef.current)
+
+            const scrollHeight = chatScrollRef.current.scrollHeight;
+            const scrollTop = chatScrollRef.current.scrollTop;
+            // window.alert(scrollHeight + ' ' + scrollTop)
+            if (scrollHeight - scrollTop > 800) {
+                setScrollToBottom(true);
+            } else {
+                setScrollToBottom(false);
             }
-        }
+
+        }, 150)
+    }, [])
+
+
+    const handleMessagesScroll = (e) => {
+        scrollToBottomDebounce.current();
     }
 
-    const chatScrollRef = useRef(null);
-    const [goToBottomBtnShow, setGoToBottomBtnShow] = useState(false);
-    const throttleCallback = () => {
-        console.log('hey hey hey');
-        const scrollHeight = chatScrollRef.current.scrollHeight;
-        const scrollTop = chatScrollRef.current.scrollTop;
-        console.log(chatScrollRef.current.scrollTop);
-        console.log(chatScrollRef.current.scrollHeight);
-        console.log('--------------------------')
-        if (scrollHeight - scrollTop > 800) {
-            setGoToBottomBtnShow(true);
-        } else {
-            setGoToBottomBtnShow(false);
 
-        }
+
+    const handleScrollToBottomBtn = (e) => {
+        scrollRef.current?.scrollIntoView({ behavior: "smooth" });
+        setScrollToBottom(false);
     }
+
 
 
     const handleTextareaKeyPress = (e) => {
@@ -452,15 +477,27 @@ const ChatPage = () => {
     }
 
 
-    const handleGoToBottomBtn = (e) => {
-        scrollRef.current?.scrollIntoView({ behavior: "smooth" });
-    }
-
     const handleLogout = (e) => {
         dispatch(logout());
         socket.removeAllListeners();
         socket.disconnect();
     }
+
+
+    useEffect(async () => {
+
+        if (audioChunk) {
+            window.alert('yes')
+            console.log(audioChunk);
+            console.log(typeof audioChunk);
+            const buffer = await audioChunk.arrayBuffer();
+
+            const reciever = selectedChatRef.current?.users[0]._id === ownUser?._id ? selectedChatRef.current?.users[1]._id : selectedChatRef.current?.users[0]._id;
+
+            socket.emit('send-audio', { buffer, reciever });
+        }
+    }, [audioChunk])
+
 
     return (
         <>
@@ -545,42 +582,70 @@ const ChatPage = () => {
                             {ownUserIsReady && chatsIsReady && selectedChat && messagesIsReady &&
 
                                 <div className={"chatSection " + (selectedChat && messagesIsReady && "shadow-lg rounded")}>
-                                    <div className="messageSection" ref={chatScrollRef} onScroll={throttle(throttleCallback, 500)}>
-                                        {/* <div className="messageSection" onScroll={handleMessageScroll}> */}
-                                        {messages?.map((msg, i, messages) => {
-                                            let nextIsMe = false;
-                                            let nextIsUser = false;
-                                            if (i < messages.length - 1) {
-                                                nextIsMe = messages[i + 1].sender === ownUser?._id;
-                                                nextIsUser = !nextIsMe;
+
+                                    <div className="position-relative">
+
+                                        <div className="position-absolute fixed-bottom">
+                                            <Animated animationIn="fadeIn" animationOut="fadeOut" isVisible={scrollToBottomShow}>
+
+                                                {scrollToBottomShow
+                                                    && <Button className="bg-transparent shadow-none border-0 outline-0 scrollIconBtn" onClick={handleScrollToBottomBtn}>
+                                                        {/* scroll to bottom */}
+
+                                                        <img src={scrollDownIcon} className="scrollIconBtn" />
+
+                                                    </Button>
+                                                }
+                                            </Animated>
+                                        </div>
+                                        <div className="messageSection " ref={chatScrollRef} onScroll={handleMessagesScroll}>
+                                            {/* <div className="messageSection" onScroll={handleMessageScroll}> */}
+                                            {messages?.map((msg, i, messages) => {
+                                                let nextIsMe = false;
+                                                let nextIsUser = false;
+                                                if (i < messages.length - 1) {
+                                                    nextIsMe = messages[i + 1].sender === ownUser?._id;
+                                                    nextIsUser = !nextIsMe;
+                                                }
+                                                return <div ref={scrollRef} key={msg._id}>
+                                                    {/* nextIsMe shows that next message belongs to ownUser or not */}
+                                                    <Message nextIsMe={nextIsMe} nextIsUser={nextIsUser} me={ownUser?._id === msg.sender} msg={msg} />
+                                                </div>
+                                            })}
+                                            {sendingMsg &&
+                                                <div ref={scrollRef} className="send-msg-spinner-cont">
+                                                    <Spinner className="send-msg-spinner" animation="border" role="status" variant="primary">
+                                                    </Spinner>
+                                                </div>
                                             }
-                                            return <div ref={scrollRef} key={msg._id}>
-                                                {/* nextIsMe shows that next message belongs to ownUser or not */}
-                                                <Message nextIsMe={nextIsMe} nextIsUser={nextIsUser} me={ownUser?._id === msg.sender} msg={msg} />
-                                            </div>
-                                        })}
-                                        {sendingMsg &&
-                                            <div ref={scrollRef} className="send-msg-spinner-cont">
-                                                <Spinner className="send-msg-spinner" animation="border" role="status" variant="primary">
-                                                </Spinner>
-                                            </div>
-                                        }
 
-                                        <div>
+                                            <audio src={audioURL} controls />
+                                            <button onClick={startRecording} disabled={isRecording}>
+                                                start recording
+                                            </button>
+                                            <button onClick={stopRecording} disabled={!isRecording}>
+                                                stop recording
+                                            </button>
 
-                                            {/* <ReactPlayer url={videoFilePath} width="100%" height="100%" controls={true} /> */}
 
-                                            {/* <ReactAudioPlayer
+                                            <div>
+
+                                                {/* <ReactPlayer url={videoFilePath} width="100%" height="100%" controls={true} /> */}
+
+                                                {/* <ReactAudioPlayer
                                                 className='bg-dark'
                                                 src={music}
                                                 controls
                                             /> */}
-                                        </div>
+                                            </div>
 
+                                        </div>
                                     </div>
 
                                     <div className="sendSection shadow-lg">
 
+                                        {/* **************Test************************** */}
+                                        {/* ******************************************** */}
                                         <InputGroup>
                                             {/* <Picker style={{ position: 'absolute', bottom: '10px', left: '10px' }} set='apple' onSelect={(e) => setTypedText(prevtext => (prevtext + e.native))} title='Pick your emoji…' emoji='point_up' emojiTooltip={true} /> */}
                                             <FormControl as="textarea"
