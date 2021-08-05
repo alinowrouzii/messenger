@@ -4,32 +4,38 @@ const userSchema = new mongoose.Schema({
     username: {
         type: String,
         required: true,
-        unique:true
+        unique: true
     },
     name: {
         type: String,
         required: true,
     },
+    role: {
+        type: String,
+        enum: ['admin', 'restricted'],
+        required: true
+    },
+
     // password: String,
     // profilePic:
     chats: {//holds chats_Id
         type: [mongoose.Types.ObjectId],
         ref: 'Chat',
-        select:false
+        select: false
     },
     friends: {//holds users_Id
         type: [mongoose.Types.ObjectId],
         ref: 'User',
-        select:false
+        select: false
     },
     salt: {
         type: String,
-        required:true,
+        required: true,
         select: false
-    }, 
+    },
     hash: {
         type: String,
-        required:true,
+        required: true,
         select: false
     }
 }, { timestamps: true });
