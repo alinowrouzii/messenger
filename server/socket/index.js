@@ -32,19 +32,19 @@ const socketConfig = (io, sessionMiddleware, passport) => {
         });
 
 
-        socket.on("sendMessage", ({ sender, receiver, text }) => {
+        socket.on("sendMessage", ({ receiver, data, kind }) => {
             console.log('message is sending...');
             console.log('users: ', users);
             console.log(socket.id)
             console.log(new Date());
             console.log('---------------')
 
-            const senderr = socket.request.user;
+            const sender = socket.request.user;
             const user = getUser(receiver);
             if (user) {
                 io.to(user.socketId).emit("getMessage", {
-                    sender: senderr._id.toString(),
-                    text,
+                    sender: sender._id.toString(),
+                    data, kind
                 });
             }
         });
@@ -87,22 +87,18 @@ const socketConfig = (io, sessionMiddleware, passport) => {
             }
         });
 
-        socket.on("send-audio", ({ buffer, reciever }) => {
-            const user = getUser(reciever);
-            const ownUser = socket.request.user;
-            // console.log('ownuser', ownUser);
-            if (user) {
-                console.log('sending audio file')
-                io.to(user.socketId).emit("get-audio", {
-                    sender: ownUser._id.toString(),
-                    buffer
-                });
-            }
-        });
-
-
-
-
+        // socket.on("send-audio", ({ buffer, reciever }) => {
+        //     const user = getUser(reciever);
+        //     const ownUser = socket.request.user;
+        //     // console.log('ownuser', ownUser);
+        //     if (user) {
+        //         console.log('sending audio file')
+        //         io.to(user.socketId).emit("get-audio", {
+        //             sender: ownUser._id.toString(),
+        //             buffer
+        //         });
+        //     }
+        // });
 
 
 
