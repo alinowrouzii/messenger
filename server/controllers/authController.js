@@ -50,7 +50,7 @@ export const signup = async (req, res) => {
         }
 
         const newUser = new User({
-            username, name, hash, salt
+            username, name, hash, salt, role:'restricted'
         });
         // username field should be unique(according to user schema)
         // so for duplicate usename we get an error message.
@@ -61,6 +61,7 @@ export const signup = async (req, res) => {
         // });
 
     } catch (err) {
+        console.log(err);
         res.status('502').json({ message: 'Database error!' });
     }
 }
@@ -70,6 +71,14 @@ export const userIsLoggedIn = async (req, res, next) => {
         return next();
     }
     res.status(401).json({ message: 'Unauthorized!' });
+}
+
+
+export const isAdmin = async (req, res, next) => {
+    if (req.isAuthenticated() && req.user.role === 'admin') {
+        return next();
+    }
+    res.status(401).json({ message: 'Premision denied!' });
 }
 
 
