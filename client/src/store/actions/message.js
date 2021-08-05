@@ -8,8 +8,8 @@ import {
     SET_MESSAGE_READY
 } from "./types";
 
-export const sendMessage = (text, sender, chatId) => (dispatch) => {
-    return send_message({ text, sender, chat: chatId }).then(
+export const sendMessage = (data, sender, chatId, msg_type) => (dispatch) => {
+    return send_message({ data, sender, chat: chatId, msg_type }).then(
         (response) => {
             dispatch({
                 type: SEND_MESSAGE_SUCCESS,
