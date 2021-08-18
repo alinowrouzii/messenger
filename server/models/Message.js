@@ -28,8 +28,8 @@ const Message = mongoose.model('Message', messageSchema);
 
 export const AudioMessage = Message.discriminator(AUDIO_MESSAGE_TYPE,
     new mongoose.Schema({
-        data: {
-            type: Buffer,
+        audioName: {
+            type: String,
             required: true
         },
     }, options));
