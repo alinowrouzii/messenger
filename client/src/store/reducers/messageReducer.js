@@ -7,7 +7,8 @@ import {
     ADD_NEW_MESSAGE_NOTIF,
     LOGOUT,
     REMOVE_NEW_MESSAGE_NOTIF,
-    SET_NEW_MESSAGE_NOTIF
+    SET_NEW_MESSAGE_NOTIF,
+    SEND_MESSAGE
 } from "../actions/types";
 
 const initialState = { messages: [], messageInfo: "", messagesIsReady: false, newMessagesNotification: [] };
@@ -17,12 +18,29 @@ export default (state = initialState, action) => {
     // console.log(type, payload);
 
     switch (type) {
-        case SEND_MESSAGE_SUCCESS:
+        case SEND_MESSAGE:
             return {
                 ...state,
                 messages: [...state.messages, payload.newMessage],
-                messageInfo: payload.messageInfo
             };
+        case SEND_MESSAGE_SUCCESS:
+            return {
+                ...state,
+                messages: state.messages.map(message => {
+                    if (message._id === payload.messageId) {
+                        //pending=false means message is sent
+                        message.pending = false;
+                        message.createdAt = Date.now();
+                        return message;
+                    }
+                    return message;
+                })
+            }
+        // return {
+        //     ...state,
+        //     messages: [...state.messages, payload.newMessage],
+        //     messageInfo: payload.messageInfo
+        // };
         case SEND_MESSAGE_FAIL:
             return {
                 ...state,
@@ -64,6 +82,7 @@ export default (state = initialState, action) => {
                 ...state,
                 newMessagesNotification: state.newMessagesNotification.filter(el => el !== payload.user)
             };
+
         case LOGOUT:
             return initialState;
         default:

@@ -13,13 +13,14 @@ import './styles.css';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../store/actions/auth';
 import { getMe, getUserData, searchUsers } from '../../store/actions/user';
-import { getMessages, sendMessage } from '../../store/actions/message';
+import { addPendingMessage, getMessages, sendMessage } from '../../store/actions/message';
 import { getChats } from '../../store/actions/chat'
 import { SET_MESSAGE_READY, SET_CHATS_READY, SET_ONLINE_USERS, SET_NEW_MESSAGE_NOTIF, ADD_NEW_MESSAGE_NOTIF, REMOVE_NEW_MESSAGE_NOTIF, ADD_TYPING_USER, REMOVE_TYPING_USER } from './../../store/actions/types';
 import { Animated } from "react-animated-css";
 import socket from "./../../socket";
 import { URL } from '../../constants';
 import _ from 'underscore';
+import { v4 as uuidv4 } from 'uuid';
 
 import { ReactComponent as MicIcon } from './../../Images/microphone.svg';
 // import { ReactComponent as StopRecordingMic } from './../../Images/stop-record.svg';
@@ -282,20 +283,39 @@ const ChatPage = () => {
         if (typedText.trim().length > 0) {
             console.log("typed text", typedText.trim())
 
-            setSendingMsg(true);
+            // setSendingMsg(true);
             const typedTxt = typedText;
 
             setTypedText("");
             setChatTextareaRows(prev => ({
                 ...prev,
                 rows: 1,
-            }))
+            }));
 
-            dispatch(sendMessage(typedTxt.trim(), ownUser?._id, selectedChat?._id, 'TEXT_MESSAGE')).then((newMessage) => {
+            // const receiver = selectedChat?.users[0]._id === ownUser?._id ? selectedChat?.users[1]._id : selectedChat?.users[0]._id;
+
+            const sender = ownUser?._id;
+            const chat = selectedChat?._id;
+            const kind = 'TEXT_MESSAGE';
+            const messageId = uuidv4();
+            const newMsg = {
+                text: typedTxt.trim(),
+                //client id is unique id to recongnize the message when message is sent
+                sender, chat, kind,
+                //pending means message is not sent yet!
+                pending: true
+            }
+            // dispatch(addPendingMessage(newMsg));
+
+            dispatch(sendMessage({
+                _id: messageId,
+                ...newMsg
+            })).then((data) => {
+                // dispatch(sendMessage(typedTxt.trim(), sender, chat, clientId, kind)).then((newMessage) => {
                 console.log('typeeeeed then', typedText);
 
                 const receiver = selectedChat?.users[0]._id === ownUser?._id ? selectedChat?.users[1]._id : selectedChat?.users[0]._id;
-                socket.emit("sendMessage", { receiver, ...newMessage });
+                socket.emit("sendMessage", { receiver, _id: data.messageId, ...newMsg });
 
                 console.log('message sent');
             }).catch((err) => {
@@ -403,12 +423,6 @@ const ChatPage = () => {
         }));
     }
 
-
-    // const handleMessageScroll = (e) => {
-    console.log('scroll');
-    // }
-
-
     useEffect(() => {
         scrollToBottomDebounce.current = _.debounce(function () {
 
@@ -431,17 +445,17 @@ const ChatPage = () => {
         scrollToBottomDebounce.current();
     }
 
-
-
     const handleScrollToBottomBtn = (e) => {
         scrollRef.current?.scrollIntoView({ behavior: "smooth" });
         setScrollToBottom(false);
     }
 
-
-
     const handleTextareaKeyPress = (e) => {
         if (e.keyCode === 13 && e.ctrlKey) {
+            if(isRecording){
+                stopRecording();
+                return;
+            }
             handleSendMessage();
         }
     }
@@ -458,28 +472,33 @@ const ChatPage = () => {
     useEffect(async () => {
 
         if (audioData) {
-            // window.alert('yes')
+          
+            const sender = ownUser?._id;
+            const chat = selectedChat?._id;
+            const kind = 'AUDIO_MESSAGE';
+            const messageId = uuidv4();
+            const text = typedText.trim();
+            setTypedText('');
+            const newMsg = {
+                //client id is unique id to recongnize the message when message is sent
+                sender, chat, kind, text,
+                //pending means message is not sent yet!
+                pending: true
+            }
 
-            // const reciever = selectedChatRef.current?.users[0]._id === ownUser?._id ? selectedChatRef.current?.users[1]._id : selectedChatRef.current?.users[0]._id;
-
-
-            // socket.emit('send-audio', { buffer, reciever });
-
-            setSendingMsg(true);
-
-            dispatch(sendMessage(audioData, ownUser?._id, selectedChatRef.current?._id, 'AUDIO_MESSAGE')).then((newMessage) => {
-
+            dispatch(sendMessage({
+                _id: messageId,
+                data: audioData,
+                ...newMsg
+            })).then((data) => {
 
                 const receiver = selectedChatRef.current?.users[0]._id === ownUser?._id ? selectedChatRef.current?.users[1]._id : selectedChatRef.current?.users[0]._id;
 
-                socket.emit("sendMessage", { receiver, ...newMessage });
-                //********************Socket implementation******************* */
+                socket.emit("sendMessage", { receiver, _id: data.messageId, ...newMsg });
 
                 console.log('message sent');
             }).catch((err) => {
                 console.log(err)
-                setSendingMsg(false);
-
                 setModalTitle("Message sending Error");
                 setModalBodyText(messagesInfo);
                 setShowModal(true);
@@ -653,7 +672,7 @@ const ChatPage = () => {
                                             }
 
 
-                                            {typedText.trim().length === 0 ?
+                                            {typedText.trim().length === 0 || isRecording ?
                                                 <div className='d-flex ms-3 mb-0'>
                                                     {isRecording
                                                         && <div className='d-inline blob-cont me-2' onClick={cancelRecording}>

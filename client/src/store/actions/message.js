@@ -7,26 +7,39 @@ import {
     SEND_MESSAGE_FAIL,
     GET_MESSAGES_SUCCESS,
     GET_MESSAGES_FAIL,
-    SET_MESSAGE_READY
+    SET_MESSAGE_READY,
+    SEND_MESSAGE
 } from "./types";
 
-export const sendMessage = (data, sender, chatId, msg_type) => (dispatch) => {
+export const sendMessage = (newMsg) => (dispatch) => {
 
-    if (msg_type === 'AUDIO_MESSAGE') {
+    if (newMsg.kind === 'AUDIO_MESSAGE') {
 
         const form = new FormData();
 
-        form.append('voice', data);
+        const { data, ...msg } = newMsg;
 
-        return send_audio_message({ form, sender, chat: chatId, msg_type }).then(
+        form.append('voice', data);
+        form.append('text', msg.text.length === 0 ? ' ' : msg.text);
+
+        const url = URL.createObjectURL(data);
+        dispatch({
+            type: SEND_MESSAGE,
+            payload: {
+                newMessage: { url, ...msg }
+            }
+        });
+
+        return send_audio_message({ form, ...msg }).then(
             (response) => {
                 dispatch({
                     type: SEND_MESSAGE_SUCCESS,
                     payload: {
-                        newMessage: response.data.message,
+                        messageId: msg._id,
                         messageInfo: response.data.messageInfo
                     }
                 });
+
 
                 dispatch({
                     type: SET_MESSAGE_READY,
@@ -35,7 +48,7 @@ export const sendMessage = (data, sender, chatId, msg_type) => (dispatch) => {
                     }
                 });
 
-                return Promise.resolve(response.data.message);
+                return Promise.resolve({ messageId: response.data.messageId });
             },
             (error) => {
                 const messageInfo =
@@ -56,12 +69,19 @@ export const sendMessage = (data, sender, chatId, msg_type) => (dispatch) => {
 
     } else {
 
-        return send_text_message({ data, sender, chat: chatId, msg_type }).then(
+        dispatch({
+            type: SEND_MESSAGE,
+            payload: {
+                newMessage: newMsg
+            }
+        });
+
+        return send_text_message(newMsg).then(
             (response) => {
                 dispatch({
                     type: SEND_MESSAGE_SUCCESS,
                     payload: {
-                        newMessage: response.data.message,
+                        messageId: newMsg._id,
                         messageInfo: response.data.messageInfo
                     }
                 });
@@ -73,7 +93,7 @@ export const sendMessage = (data, sender, chatId, msg_type) => (dispatch) => {
                     }
                 });
 
-                return Promise.resolve(response.data.message);
+                return Promise.resolve({ messageId: response.data.messageId });
             },
             (error) => {
                 const messageInfo =
