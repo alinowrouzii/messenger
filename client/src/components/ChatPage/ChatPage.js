@@ -19,10 +19,14 @@ import { SET_MESSAGE_READY, SET_CHATS_READY, SET_ONLINE_USERS, SET_NEW_MESSAGE_N
 import { Animated } from "react-animated-css";
 import socket from "./../../socket";
 import { URL } from '../../constants';
-import { format } from 'timeago.js';
-import ReactPlayer from 'react-player';
-import ReactAudioPlayer from 'react-audio-player';
 import _ from 'underscore';
+
+import { ReactComponent as MicIcon } from './../../Images/microphone.svg';
+// import { ReactComponent as StopRecordingMic } from './../../Images/stop-record.svg';
+import { ReactComponent as CancelIcon } from './../../Images/multiply.svg';
+// import { ReactComponent as SendIcon } from './../../Images/send-icon-reverse.svg';
+import sendIcon from './../../Images/send-icon-reverse.png';
+import { ReactComponent as FileAttachIcon } from './../../Images/file-attach.svg';
 
 import scrollDownIcon from './../../Images/scroll-down.png'
 import useRecorder from '../../utils/useRecorder';
@@ -33,11 +37,14 @@ const ChatPage = () => {
 
     const [typedText, setTypedText] = useState("");
 
+    const inputFile = useRef(null)
+
     const [chatTextareaRows, setChatTextareaRows] = useState({
         rows: 1,
         minRows: 1,
         maxRows: 2,
     });
+    const [textAreaIsEmpty, setTextareaIsEmpty] = useState(true);
 
     const [friendButtonSelected, setFriendButtonSelected] = useState(true);
     const [searchBarText, setSearchBarText] = useState("");
@@ -87,7 +94,7 @@ const ChatPage = () => {
 
     const scrollToBottomDebounce = useRef();
 
-    const [audioURL, isRecording, startRecording, stopRecording, audioChunk, setAudioURL] = useRecorder();
+    const [isRecording, startRecording, stopRecording, cancelRecording, audioData] = useRecorder();
 
 
     const scrollRef = useRef();
@@ -156,33 +163,19 @@ const ChatPage = () => {
                 socket.disconnect();
             });
 
-            socket.on("getMessage", (res) => {
+            socket.on("getMessage", (newMessage) => {
 
-                const newMsg = {
-                    sender: res.sender,
-                    data: res.data,
-                    // chat: selectedChat?._id,
-                    kind: res.kind,
-                    createdAt: Date.now(),
-                    _id: new Date().getUTCMilliseconds()
-                };
-                console.log('text', res.data)
-                console.log("messages added", res.sender, "---", selectedChat)
-                console.log('query', selectedChat?.users.some(user => user._id === res.sender));
+                selectedChatRef.current?.users.some(user => user._id === newMessage.sender) && setMessages(prev => [...prev, newMessage]);
 
-
-                selectedChatRef.current?.users.some(user => user._id === res.sender) && setMessages(prev => [...prev, newMsg]);
-
-                !(selectedChatRef.current?.users.some(user => user._id === res.sender))
+                !(selectedChatRef.current?.users.some(user => user._id === newMessage.sender))
                     && dispatch({
                         type: ADD_NEW_MESSAGE_NOTIF,
                         payload: {
                             //data.sender is id of sender
-                            user: res.sender
+                            user: newMessage.sender
                         }
-                    })
+                    });
             });
-
 
             socket.on('isTyping', (data) => {
                 // window.alert('add user');
@@ -204,11 +197,11 @@ const ChatPage = () => {
                 })
             });
 
-            socket.on('get-audio', ({ sender, buffer }) => {
-                const blob = new Blob([buffer], { 'type': 'audio/ogg; codecs=opus' });
+            // socket.on('get-audio', ({ sender, buffer }) => {
+            //     const blob = new Blob([buffer], { 'type': 'audio/ogg; codecs=opus' });
 
-                setAudioURL(window.URL.createObjectURL(blob));
-            })
+            //     setAudioURL(window.URL.createObjectURL(blob));
+            // })
         }
 
     }, [ownUserIsReady])
@@ -298,27 +291,11 @@ const ChatPage = () => {
                 rows: 1,
             }))
 
-            dispatch(sendMessage(typedTxt.trim(), ownUser?._id, selectedChat?._id, 'TEXT_MESSAGE')).then(() => {
+            dispatch(sendMessage(typedTxt.trim(), ownUser?._id, selectedChat?._id, 'TEXT_MESSAGE')).then((newMessage) => {
                 console.log('typeeeeed then', typedText);
 
-                // const newMsg = {
-                //     text: typedTxt,
-                //     sender: ownUser?._id,
-                //     chat: selectedChat?._id,
-                //     createdAt: new Date()
-                // }
-                // setMessages(prev => [...prev, newMsg]);
-
-
-                //********************Socket implementation******************* */
-                const reciever = selectedChat?.users[0]._id === ownUser?._id ? selectedChat?.users[1]._id : selectedChat?.users[0]._id;
-                socket.emit("sendMessage", {
-                    // sender: ownUser?._id,
-                    receiver: reciever,
-                    data: typedTxt,
-                    kind: 'TEXT_MESSAGE'
-                });
-                //********************Socket implementation******************* */
+                const receiver = selectedChat?.users[0]._id === ownUser?._id ? selectedChat?.users[1]._id : selectedChat?.users[0]._id;
+                socket.emit("sendMessage", { receiver, ...newMessage });
 
                 console.log('message sent');
             }).catch((err) => {
@@ -424,19 +401,12 @@ const ChatPage = () => {
             ...prev,
             rows: currentRows < maxRows ? currentRows : maxRows,
         }));
-
-
-
     }
-
-
 
 
     // const handleMessageScroll = (e) => {
     console.log('scroll');
     // }
-
-
 
 
     useEffect(() => {
@@ -484,21 +454,46 @@ const ChatPage = () => {
     }
 
 
+
     useEffect(async () => {
 
-        if (audioChunk) {
-            window.alert('yes')
-            console.log(audioChunk);
-            console.log(typeof audioChunk);
-            const buffer = await audioChunk.arrayBuffer();
+        if (audioData) {
+            // window.alert('yes')
 
-            const reciever = selectedChatRef.current?.users[0]._id === ownUser?._id ? selectedChatRef.current?.users[1]._id : selectedChatRef.current?.users[0]._id;
+            // const reciever = selectedChatRef.current?.users[0]._id === ownUser?._id ? selectedChatRef.current?.users[1]._id : selectedChatRef.current?.users[0]._id;
 
-            socket.emit('send-audio', { buffer, reciever });
+
+            // socket.emit('send-audio', { buffer, reciever });
+
+            setSendingMsg(true);
+
+            dispatch(sendMessage(audioData, ownUser?._id, selectedChatRef.current?._id, 'AUDIO_MESSAGE')).then((newMessage) => {
+
+
+                const receiver = selectedChatRef.current?.users[0]._id === ownUser?._id ? selectedChatRef.current?.users[1]._id : selectedChatRef.current?.users[0]._id;
+
+                socket.emit("sendMessage", { receiver, ...newMessage });
+                //********************Socket implementation******************* */
+
+                console.log('message sent');
+            }).catch((err) => {
+                console.log(err)
+                setSendingMsg(false);
+
+                setModalTitle("Message sending Error");
+                setModalBodyText(messagesInfo);
+                setShowModal(true);
+            });
+
+
         }
-    }, [audioChunk])
+    }, [audioData])
 
 
+    useEffect(() => {
+
+        console.log('isRecording...', isRecording)
+    }, [isRecording])
     return (
         <>
             <Container className="mainContainer chatPageStyles" fluid>
@@ -589,7 +584,7 @@ const ChatPage = () => {
                                             <Animated animationIn="fadeIn" animationOut="fadeOut" isVisible={scrollToBottomShow}>
 
                                                 {scrollToBottomShow
-                                                    && <Button className="bg-transparent shadow-none border-0 outline-0 scrollIconBtn" onClick={handleScrollToBottomBtn}>
+                                                    && <Button className="mb-3 bg-transparent shadow-none border-0 outline-0 scrollIconBtn" onClick={handleScrollToBottomBtn}>
                                                         {/* scroll to bottom */}
 
                                                         <img src={scrollDownIcon} className="scrollIconBtn" />
@@ -619,35 +614,14 @@ const ChatPage = () => {
                                                 </div>
                                             }
 
-                                            <audio src={audioURL} controls />
-                                            <button onClick={startRecording} disabled={isRecording}>
-                                                start recording
-                                            </button>
-                                            <button onClick={stopRecording} disabled={!isRecording}>
-                                                stop recording
-                                            </button>
-
-
-                                            <div>
-
-                                                {/* <ReactPlayer url={videoFilePath} width="100%" height="100%" controls={true} /> */}
-
-                                                {/* <ReactAudioPlayer
-                                                className='bg-dark'
-                                                src={music}
-                                                controls
-                                            /> */}
-                                            </div>
-
                                         </div>
                                     </div>
 
                                     <div className="sendSection shadow-lg">
 
-                                        {/* **************Test************************** */}
-                                        {/* ******************************************** */}
                                         <InputGroup>
                                             {/* <Picker style={{ position: 'absolute', bottom: '10px', left: '10px' }} set='apple' onSelect={(e) => setTypedText(prevtext => (prevtext + e.native))} title='Pick your emoji…' emoji='point_up' emojiTooltip={true} /> */}
+
                                             <FormControl as="textarea"
                                                 className="textarea"
                                                 onChange={handleTextareaChange}
@@ -659,14 +633,60 @@ const ChatPage = () => {
                                             // styles={{ marginRight: "10px" }}
                                             />
 
-                                            <Button onClick={handleSendMessage} className="shadow-none sendMsgBtn rounded ms-3 mb-0 text-white" variant="primary">
-                                                Send!
-                                            </Button>
+                                            {!isRecording &&
+                                                <>
+                                                    <input
+                                                        type='file'
+                                                        id='file'
+                                                        ref={inputFile}
+                                                        style={{ display: 'none' }}
+                                                        onChange={(e) => console.log('file selected', e.target.value, '--------', e.target.files[0])}
+                                                    />
+                                                    <Button
+                                                        onClick={() => inputFile.current.click()}
+                                                        className='bg-transparent border-0 ms-2'
+                                                        style={{ width: '3rem', height: '3rem' }}
+                                                    >
+                                                        <FileAttachIcon />
+                                                    </Button>
+                                                </>
+                                            }
+
+
+                                            {typedText.trim().length === 0 ?
+                                                <div className='d-flex ms-3 mb-0'>
+                                                    {isRecording
+                                                        && <div className='d-inline blob-cont me-2' onClick={cancelRecording}>
+                                                            <CancelIcon />
+                                                        </div>
+                                                    }
+                                                    <div className={'d-inline blob-cont ' + (isRecording && ' blob red bg-primary')} onClick={() => isRecording ? stopRecording() : startRecording()}>
+
+                                                        {/* <Button className='blob red' style={{ width: '3rem', height: '3rem' }} className='rounded-circle' onClick={startRecording} disabled={isRecording} variant='danger'> */}
+
+                                                        {isRecording ?
+                                                            <div>
+                                                                <img className='send-img' src={sendIcon} />
+                                                            </div>
+                                                            :
+                                                            <MicIcon />
+                                                        }
+                                                    </div>
+                                                </div>
+                                                :
+                                                <div className='d-flex ms-3 mb-0'>
+                                                    <div className='send-blob-cont bg-primary' onClick={handleSendMessage}>
+                                                        {/* <SendIcon /> */}
+                                                        <img className='send-img' src={sendIcon} />
+                                                    </div>
+                                                </div>
+
+                                            }
+                                            {/* <Button onClick={handleSendMessage} className="shadow-none sendMsgBtn rounded ms-3 mb-0 text-white" variant="primary">
+                                                    Send!
+                                                </Button> */}
                                         </InputGroup>
-                                        {/* {goToBottomBtnShow &&
-                                            <Button onClick={handleGoToBottomBtn} >
-                                                go to bottom
-                                            </Button>} */}
+
                                     </div>
                                 </div>
                             }

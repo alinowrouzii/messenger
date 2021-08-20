@@ -91,14 +91,16 @@
       outline: none;
   }
 
-
-
-
-
+  
   .chatPageStyles .messageSection{
       padding-top: 10px;
       overflow-y: auto;
       max-height: 42rem;
+  }
+
+  .chatPageStyles .scrollIconBtn{
+      width: 40px;
+      height: auto;
   }
 
 
@@ -158,4 +160,79 @@
     background: #555;
   }
 
+
+
+
+  .blob-cont{
+    background: rgba(255, 82, 82, 1);
+
+    border-radius: 50%;
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 1);
+    padding: 10px;
+    height: 3rem;
+    width: 3rem;
+    transition: background-color .5s, transform 2s;;
+}
+
+
+
+.send-blob-cont{
+
+  border-radius: 50%;
+  box-shadow: 0 0 0 0 rgba(0, 0, 0, 1);
+  padding: 10px;
+  height: 3rem;
+  width: 3rem;
+  transition: background-color .5s, transform 2s;;
+}
+
+
+
+.send-blob-cont:hover{
+    background: rgb(190, 97, 97);
+    cursor: pointer;
+}
+
+.send-img{
+  width: 1.8rem;
+  height:1.8rem;
+}
+
+.blob-cont:hover{
+    background: rgb(190, 97, 97);
+    cursor: pointer;
+}
+
+/* .disable-blob-cont:hover{
+    cursor: initial;
+  } */
+
+  .blob{
+    /* background: black; */
+   
+    transform: scale(1);
+    animation: pulse-black 1s infinite;
+}
+
+.blob.red {
+    box-shadow: 0 0 0 0 rgb(82, 114, 255);
+    animation: pulse-red 1s infinite;
+  }
+  
+  @keyframes pulse-red {
+    0% {
+      transform: scale(0.95);
+      box-shadow: 0 0 0 0 rgba(40, 156, 251, 0.7);
+    }
+    
+    70% {
+      transform: scale(1);
+      box-shadow: 0 0 0 30px rgba(255, 82, 82, 0);
+    }
+    
+    100% {
+      transform: scale(0.95);
+      box-shadow: 0 0 0 0 rgba(255, 82, 82, 0);
+    }
+  }
 
