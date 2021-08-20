@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card } from 'react-bootstrap';
+import { Card, Spinner } from 'react-bootstrap';
 import img from './../../../Images/no-profile.jpg';
 
 import { format } from "timeago.js";
@@ -26,7 +26,7 @@ const Message = ({ me, msg, nextIsMe, nextIsUser }) => {
                                     className='ps-2 pt-1'
                                 >
                                     <Card.Text>
-                                        {msg.data}
+                                        {msg.text}
                                     </Card.Text>
                                 </Card.Body>
                                 <Card.Body className="pb-1 pe-2 pt-0" >
@@ -34,7 +34,11 @@ const Message = ({ me, msg, nextIsMe, nextIsUser }) => {
                                         styles={{ fontSize: '15px' }}
                                         className='float-end user-select-none text-white-50'
                                     >
-                                        {format(msg.createdAt)}
+                                        {msg.pending ?
+                                            <Spinner animation="border" variant="warning" style={{ width: '1rem', height: '1rem' }} />
+                                            :
+                                            format(msg.createdAt)
+                                        }
                                     </Card.Text>
 
                                 </Card.Body>
@@ -46,15 +50,29 @@ const Message = ({ me, msg, nextIsMe, nextIsUser }) => {
                                 <Card.Body
                                     className='ps-2 pt-1'
                                 >
-                                    <audio className='my-audio mb-0' src={`${URL}/message/getAudio/${msg.chat}/${msg._id}`} controls controlsList="nodownload" />
+                                    <audio className='my-audio mb-0' src={msg.url || `${URL}/message/getAudio/${msg.chat}/${msg._id}`} controls controlsList="nodownload" />
 
                                 </Card.Body>
+                                
+                                {msg.text.trim().length > 0 &&
+                                    <Card.Body
+                                        className="pt-1 ps-2"
+                                    >
+                                        {msg.text}
+                                    </Card.Body>
+                                }
+
                                 <Card.Body className="pb-1 pe-2 pt-0 mt-0" >
                                     <Card.Text
                                         styles={{ fontSize: '15px' }}
                                         className='float-end user-select-none text-white-50'
                                     >
-                                        {format(msg.createdAt)}
+
+                                        {msg.pending ?
+                                            <Spinner animation="border" variant="warning" style={{ width: '1rem', height: '1rem' }} />
+                                            :
+                                            format(msg.createdAt)
+                                        }
                                     </Card.Text>
 
                                 </Card.Body>
@@ -81,7 +99,7 @@ const Message = ({ me, msg, nextIsMe, nextIsUser }) => {
                                     className="pt-1 ps-2"
                                 >
                                     <Card.Text>
-                                        {msg.data}
+                                        {msg.text}
                                     </Card.Text>
                                 </Card.Body>
                                 <Card.Body className="pb-1 pe-2 pt-0" >
@@ -103,6 +121,14 @@ const Message = ({ me, msg, nextIsMe, nextIsUser }) => {
                                     <audio className='user-audio' src={`${URL}/message/getAudio/${msg.chat}/${msg._id}`} controls controlsList="nodownload" />
 
                                 </Card.Body>
+
+                                {msg.text.trim().length > 0 &&
+                                    <Card.Body
+                                        className="pt-1 ps-2"
+                                    >
+                                        {msg.text}
+                                    </Card.Body>
+                                }
                                 <Card.Body className="pb-1 pe-2 pt-0" >
                                     <Card.Text
                                         className='float-end text-muted user-select-none'
