@@ -1,8 +1,9 @@
 .prof-img{
     width: 55px;
     height: 55px;
+    margin-right: 1rem;
+    /* why removing margin-right change margin of other image components*/
 }
-
 
 
 .my-msg-card-cont{
@@ -20,3 +21,36 @@
 .user-card-cont{
     border-radius: 10px;
 }
+  
+.my-audio::-webkit-media-controls-panel{
+    /* background-color: rgb(76, 211, 251); */
+    background-color: #3581eb;    
+    outline: #3581eb;
+}
+
+.my-audio{
+    max-width:17rem;
+
+    /* background-color: rgb(76, 211, 251); */
+    background-color: #3581eb;
+    outline: #3581eb;
+    /* background-color:#C8C8C8; */
+    border-radius: 10px;
+   
+}
+.user-audio::-webkit-media-controls-panel{
+    background-color:#C8C8C8;
+    outline: #C8C8C8;
+
+}
+
+.user-audio{
+    background-color:#C8C8C8;
+    outline: #C8C8C8;
+    max-width:17rem;
+
+    border-radius: 10px;
+   
+}
+
+
