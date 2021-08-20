@@ -1,5 +1,7 @@
 
-import { sendMessage as send_message, getMessages as get_messages } from './../../api/message.js'
+import FormData from "form-data";
+
+import { sendTextMessage as send_text_message, sendAudioMessage as send_audio_message, getMessages as get_messages } from './../../api/message.js'
 import {
     SEND_MESSAGE_SUCCESS,
     SEND_MESSAGE_FAIL,
@@ -9,41 +11,87 @@ import {
 } from "./types";
 
 export const sendMessage = (data, sender, chatId, msg_type) => (dispatch) => {
-    return send_message({ data, sender, chat: chatId, msg_type }).then(
-        (response) => {
-            dispatch({
-                type: SEND_MESSAGE_SUCCESS,
-                payload: {
-                    newMessage: response.data.message,
-                    messageInfo: response.data.messageInfo
-                }
-            });
 
-            dispatch({
-                type: SET_MESSAGE_READY,
-                payload: {
-                    isReady: true
-                }
-            });
+    if (msg_type === 'AUDIO_MESSAGE') {
 
-            return Promise.resolve();
-        },
-        (error) => {
-            const messageInfo =
-                (error.response &&
-                    error.response.data &&
-                    error.response.data.message) ||
-                error.message ||
-                error.toString();
+        const form = new FormData();
 
-            dispatch({
-                type: SEND_MESSAGE_FAIL,
-                payload: { messageInfo, },
-            });
+        form.append('voice', data);
 
-            return Promise.reject();
-        }
-    );
+        return send_audio_message({ form, sender, chat: chatId, msg_type }).then(
+            (response) => {
+                dispatch({
+                    type: SEND_MESSAGE_SUCCESS,
+                    payload: {
+                        newMessage: response.data.message,
+                        messageInfo: response.data.messageInfo
+                    }
+                });
+
+                dispatch({
+                    type: SET_MESSAGE_READY,
+                    payload: {
+                        isReady: true
+                    }
+                });
+
+                return Promise.resolve(response.data.message);
+            },
+            (error) => {
+                const messageInfo =
+                    (error.response &&
+                        error.response.data &&
+                        error.response.data.message) ||
+                    error.message ||
+                    error.toString();
+
+                dispatch({
+                    type: SEND_MESSAGE_FAIL,
+                    payload: { messageInfo, },
+                });
+
+                return Promise.reject();
+            }
+        );
+
+    } else {
+
+        return send_text_message({ data, sender, chat: chatId, msg_type }).then(
+            (response) => {
+                dispatch({
+                    type: SEND_MESSAGE_SUCCESS,
+                    payload: {
+                        newMessage: response.data.message,
+                        messageInfo: response.data.messageInfo
+                    }
+                });
+
+                dispatch({
+                    type: SET_MESSAGE_READY,
+                    payload: {
+                        isReady: true
+                    }
+                });
+
+                return Promise.resolve(response.data.message);
+            },
+            (error) => {
+                const messageInfo =
+                    (error.response &&
+                        error.response.data &&
+                        error.response.data.message) ||
+                    error.message ||
+                    error.toString();
+
+                dispatch({
+                    type: SEND_MESSAGE_FAIL,
+                    payload: { messageInfo, },
+                });
+
+                return Promise.reject();
+            }
+        );
+    }
 };
 
 export const getMessages = (chatId) => (dispatch) => {
