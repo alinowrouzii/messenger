@@ -1,7 +1,7 @@
 
 import FormData from "form-data";
 
-import { sendTextMessage as send_text_message, sendAudioMessage as send_audio_message, getMessages as get_messages } from './../../api/message.js'
+import { sendTextMessage as send_text_message, sendMediaMessage as send_media_message, getMessages as get_messages } from './../../api/message.js'
 import {
     SEND_MESSAGE_SUCCESS,
     SEND_MESSAGE_FAIL,
@@ -13,16 +13,16 @@ import {
 
 export const sendMessage = (newMsg) => (dispatch) => {
 
-    if (newMsg.kind === 'AUDIO_MESSAGE') {
+    const { data, ...msg } = newMsg;
+    const kind = msg.kind;
+    if (kind === 'AUDIO_MESSAGE' || kind === 'IMAGE_MESSAGE') {
+
 
         const form = new FormData();
-
-        const { data, ...msg } = newMsg;
-
-        form.append('voice', data);
+        form.append(kind, data);
         form.append('text', msg.text.length === 0 ? ' ' : msg.text);
 
-        const url = URL.createObjectURL(data);
+        const url = window.URL.createObjectURL(data);
         dispatch({
             type: SEND_MESSAGE,
             payload: {
@@ -30,7 +30,7 @@ export const sendMessage = (newMsg) => (dispatch) => {
             }
         });
 
-        return send_audio_message({ form, ...msg }).then(
+        return send_media_message({ form, ...msg }).then(
             (response) => {
                 dispatch({
                     type: SEND_MESSAGE_SUCCESS,
@@ -39,7 +39,6 @@ export const sendMessage = (newMsg) => (dispatch) => {
                         messageInfo: response.data.messageInfo
                     }
                 });
-
 
                 dispatch({
                     type: SET_MESSAGE_READY,
@@ -72,16 +71,16 @@ export const sendMessage = (newMsg) => (dispatch) => {
         dispatch({
             type: SEND_MESSAGE,
             payload: {
-                newMessage: newMsg
+                newMessage: msg
             }
         });
 
-        return send_text_message(newMsg).then(
+        return send_text_message(msg).then(
             (response) => {
                 dispatch({
                     type: SEND_MESSAGE_SUCCESS,
                     payload: {
-                        messageId: newMsg._id,
+                        messageId: msg._id,
                         messageInfo: response.data.messageInfo
                     }
                 });
