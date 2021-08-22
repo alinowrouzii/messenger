@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { useStateRef } from './../../utils'
-import { Container, Row, Col, InputGroup, Button, FormControl, Form, Modal, Alert, Spinner } from 'react-bootstrap';
+import { Container, Row, Col, InputGroup, Button, FormControl, Form, Modal, Alert, Spinner, Image } from 'react-bootstrap';
 import ProfileInfo from './../Utils/ProfileInfo/ProfileInfo';
 import ProfileInfoWIthAddBtn from './../Utils/ProfileInfo/ProfileInfoWithAddBtn';
 import Message from './../Utils/Message/Message'
@@ -31,6 +31,8 @@ import { ReactComponent as FileAttachIcon } from './../../Images/file-attach.svg
 
 import scrollDownIcon from './../../Images/scroll-down.png'
 import useRecorder from '../../utils/useRecorder';
+import dateFormat from "dateformat";
+
 
 const ChatPage = () => {
 
@@ -97,6 +99,11 @@ const ChatPage = () => {
 
     const [isRecording, startRecording, stopRecording, cancelRecording, audioData] = useRecorder();
 
+    const [showSendImageModal, setShowSendImageModal] = useState(false);
+
+
+    const [messageType, setMessageType] = useState('TEXT_MESSAGE');
+    const messageTypeRef = useRef('TEXT_MESSAGE');
 
     const scrollRef = useRef();
     useEffect(() => {
@@ -197,38 +204,9 @@ const ChatPage = () => {
                     }
                 })
             });
-
-            // socket.on('get-audio', ({ sender, buffer }) => {
-            //     const blob = new Blob([buffer], { 'type': 'audio/ogg; codecs=opus' });
-
-            //     setAudioURL(window.URL.createObjectURL(blob));
-            // })
         }
 
     }, [ownUserIsReady])
-
-    // useEffect(() => {
-
-    //     console.log('runneddddddd')
-    //     socket.on("getMessage", (data) => {
-
-    //         const newMsg = {
-    //             sender: data.sender,
-    //             text: data.text,
-    //             // chat: selectedChat?._id,
-    //             createdAt: Date.now(),
-    //             _id: new Date().getUTCMilliseconds()
-    //         };
-    //         console.log('text', data.text)
-    //         console.log("messages added", data.sender, "---", selectedChat)
-    //         console.log('query', selectedChat?.users.some(user => user._id === data.sender))
-    //         selectedChatRef.current?.users.some(user => user._id === data.sender) && setMessages(prev => [...prev, newMsg]);
-    //     });
-    // }, []);
-
-
-    //******************************************************************************************************** */
-
 
     useEffect(() => {
         if (chats.length > 0) {
@@ -279,54 +257,68 @@ const ChatPage = () => {
     }
 
     const handleSendMessage = () => {
+        const messageType = messageTypeRef.current;
 
-        if (typedText.trim().length > 0) {
-            console.log("typed text", typedText.trim())
-
-            // setSendingMsg(true);
-            const typedTxt = typedText;
-
-            setTypedText("");
-            setChatTextareaRows(prev => ({
-                ...prev,
-                rows: 1,
-            }));
-
-            // const receiver = selectedChat?.users[0]._id === ownUser?._id ? selectedChat?.users[1]._id : selectedChat?.users[0]._id;
-
-            const sender = ownUser?._id;
-            const chat = selectedChat?._id;
-            const kind = 'TEXT_MESSAGE';
-            const messageId = uuidv4();
-            const newMsg = {
-                text: typedTxt.trim(),
-                //client id is unique id to recongnize the message when message is sent
-                sender, chat, kind,
-                //pending means message is not sent yet!
-                pending: true
-            }
-            // dispatch(addPendingMessage(newMsg));
-
-            dispatch(sendMessage({
-                _id: messageId,
-                ...newMsg
-            })).then((data) => {
-                // dispatch(sendMessage(typedTxt.trim(), sender, chat, clientId, kind)).then((newMessage) => {
-                console.log('typeeeeed then', typedText);
-
-                const receiver = selectedChat?.users[0]._id === ownUser?._id ? selectedChat?.users[1]._id : selectedChat?.users[0]._id;
-                socket.emit("sendMessage", { receiver, _id: data.messageId, ...newMsg });
-
-                console.log('message sent');
-            }).catch((err) => {
-                console.log(err)
-                setSendingMsg(false);
-
-                setModalTitle("Message sending Error");
-                setModalBodyText(messagesInfo);
-                setShowModal(true);
-            });
+        if (messageType !== 'TEXT_MESSAGE' && messageType !== 'AUDIO_MESSAGE' && messageType !== 'IMAGE_MESSAGE') {
+            return;
         }
+        if (messageType === 'TEXT_MESSAGE' && typedText.trim().length === 0) {
+            return;
+        }
+
+        const sender = ownUser?._id;
+        const chat = selectedChat?._id;
+        const messageId = uuidv4();
+        const text = typedText.trim();
+        let data = null;
+
+        const newMsg = {
+            text,
+            //client id is unique id to recongnize the message when message is sent
+            sender, chat,
+            //pending means message is not sent yet!
+            pending: true
+        }
+
+        if (messageType === 'TEXT_MESSAGE') {
+            newMsg.kind = 'TEXT_MESSAGE';
+
+        } else if (messageType === 'AUDIO_MESSAGE') {
+            newMsg.kind = 'AUDIO_MESSAGE';
+            data = audioData;
+
+        } else if (messageType === 'IMAGE_MESSAGE') {
+            newMsg.kind = 'IMAGE_MESSAGE';
+            data = selectedImage;
+            setSelectedImage(null);
+            setShowSendImageModal(false);
+        }
+
+        dispatch(sendMessage({
+            _id: messageId,
+            data,
+            ...newMsg
+        })).then((data) => {
+
+            const receiver = selectedChatRef.current?.users[0]._id === ownUser?._id ? selectedChatRef.current?.users[1]._id : selectedChatRef.current?.users[0]._id;
+
+            socket.emit("sendMessage", { receiver, _id: data.messageId, ...newMsg });
+
+            console.log('message sent');
+        }).catch((err) => {
+            console.log(err)
+            setModalTitle("Message sending Error");
+            setModalBodyText(messagesInfo);
+            setShowModal(true);
+        });
+
+        messageTypeRef.current = 'TEXT_MESSAGE';
+        setTypedText("");
+        setChatTextareaRows(prev => ({
+            ...prev,
+            rows: 1,
+        }));
+
 
     }
 
@@ -452,7 +444,7 @@ const ChatPage = () => {
 
     const handleTextareaKeyPress = (e) => {
         if (e.keyCode === 13 && e.ctrlKey) {
-            if(isRecording){
+            if (isRecording) {
                 stopRecording();
                 return;
             }
@@ -472,60 +464,81 @@ const ChatPage = () => {
     useEffect(async () => {
 
         if (audioData) {
-          
-            const sender = ownUser?._id;
-            const chat = selectedChat?._id;
-            const kind = 'AUDIO_MESSAGE';
-            const messageId = uuidv4();
-            const text = typedText.trim();
-            setTypedText('');
-            const newMsg = {
-                //client id is unique id to recongnize the message when message is sent
-                sender, chat, kind, text,
-                //pending means message is not sent yet!
-                pending: true
-            }
 
-            dispatch(sendMessage({
-                _id: messageId,
-                data: audioData,
-                ...newMsg
-            })).then((data) => {
+            messageTypeRef.current = 'AUDIO_MESSAGE';
+            handleSendMessage();
+            // const sender = ownUser?._id;
+            // const chat = selectedChat?._id;
+            // const kind = 'AUDIO_MESSAGE';
+            // const messageId = uuidv4();
+            // const text = typedText.trim();
+            // setTypedText('');
+            // const newMsg = {
+            //     //client id is unique id to recongnize the message when message is sent
+            //     sender, chat, kind, text,
+            //     //pending means message is not sent yet!
+            //     pending: true
+            // }
 
-                const receiver = selectedChatRef.current?.users[0]._id === ownUser?._id ? selectedChatRef.current?.users[1]._id : selectedChatRef.current?.users[0]._id;
+            // dispatch(sendMessage({
+            //     _id: messageId,
+            //     data: audioData,
+            //     ...newMsg
+            // })).then((data) => {
 
-                socket.emit("sendMessage", { receiver, _id: data.messageId, ...newMsg });
+            //     const receiver = selectedChatRef.current?.users[0]._id === ownUser?._id ? selectedChatRef.current?.users[1]._id : selectedChatRef.current?.users[0]._id;
 
-                console.log('message sent');
-            }).catch((err) => {
-                console.log(err)
-                setModalTitle("Message sending Error");
-                setModalBodyText(messagesInfo);
-                setShowModal(true);
-            });
+            //     socket.emit("sendMessage", { receiver, _id: data.messageId, ...newMsg });
+
+            //     console.log('message sent');
+            // }).catch((err) => {
+            //     console.log(err)
+            //     setModalTitle("Message sending Error");
+            //     setModalBodyText(messagesInfo);
+            //     setShowModal(true);
+            // });
 
 
         }
     }, [audioData])
 
 
-    useEffect(() => {
+    const [selectedImageUrl, setSelectedImageUrl] = useState(null);
+    const [selectedImage, setSelectedImage] = useState(null);
+    // const selectedImageRef= useRef();
 
-        console.log('isRecording...', isRecording)
-    }, [isRecording])
+    const handleFileSelect = (e) => {
+
+        if (e.target.files.length > 0) {
+
+            const selected = e.target.files[0];
+            setSelectedImage(selected);
+
+            const imageUrl = window.URL.createObjectURL(selected);
+            setSelectedImageUrl(imageUrl);
+
+            inputFile.current.value = '';
+            setShowSendImageModal(true);
+            return
+        }
+        setShowSendImageModal(false);
+
+    }
+
+
     return (
         <>
             <Container className="mainContainer chatPageStyles" fluid>
-                <Row className="rowOne mb-3 bg-primary text-white p-2">
+                {/* <Row className="rowOne mb-3 bg-primary text-white p-2">
                     <Col className='' lg={10} style={{ marginTop: "15px", marginBottom: "10px" }}>
                         <Navbar logout={handleLogout} />
 
-                        {/* <Button onClick={handleLogout}>logout</Button> */}
                     </Col>
+                        <Button onClick={handleLogout}>logout</Button>
                     <Col className='' lg={2} style={{ marginTop: "15px", marginBottom: "10px" }}>
                         <MyProfileInfo />
                     </Col>
-                </Row>
+                </Row> */}
                 <Row className="rowTwo">
                     <Col lg={2} sm={4} className="shadow-lg rounded">
                         <Row>
@@ -554,7 +567,9 @@ const ChatPage = () => {
                                     value={searchBarText}
                                     aria-label="Enter the username!"
                                     className="textarea search-textarea"
-                                    placeholder="Enter userName" />
+                                    placeholder="Enter userName"
+
+                                />
                                 <Button
                                     onClick={handleSearchUsers}
                                     variant="secondary"
@@ -573,7 +588,7 @@ const ChatPage = () => {
                                             onClick={handleGetMessages(chat)}
                                             className="mb-1"
                                         >
-                                            <ProfileInfo chat={chat} />
+                                            <ProfileInfo chat={chat} user={chat.users[0]._id === ownUser._id ? chat.users[1] : chat.users[0]} />
                                         </div>
                                     )
                                 :
@@ -617,21 +632,44 @@ const ChatPage = () => {
                                             {messages?.map((msg, i, messages) => {
                                                 let nextIsMe = false;
                                                 let nextIsUser = false;
+                                                let sameDay = false;
                                                 if (i < messages.length - 1) {
                                                     nextIsMe = messages[i + 1].sender === ownUser?._id;
                                                     nextIsUser = !nextIsMe;
                                                 }
+
+                                                if (i > 0) {
+                                                    //check that current message and next message is in the same day or not
+                                                    const createdAt = new Date(msg.createdAt);
+                                                    const createdAt2 = new Date(messages[i - 1].createdAt);
+                                                    {/* createdAt.getFullYear() === createdAt2.getFullYear() &&
+                                                        createdAt.getMonth() === createdAt2.getMonth() &&
+                                                        createdAt.getDate() === createdAt2.getDate() */}
+                                                    if (
+                                                        createdAt.getHours() === createdAt2.getHours()
+                                                    ) {
+                                                        sameDay = true;
+                                                    }
+                                                }
+
                                                 return <div ref={scrollRef} key={msg._id}>
                                                     {/* nextIsMe shows that next message belongs to ownUser or not */}
-                                                    <Message nextIsMe={nextIsMe} nextIsUser={nextIsUser} me={ownUser?._id === msg.sender} msg={msg} />
+                                                    <>
+                                                        {!sameDay && msg.createdAt &&
+                                                            <div className='d-flex justify-content-center mb-2'>
+                                                                <span
+                                                                    className=' shadow-sm p-1 user-select-none'
+                                                                    style={{ borderRadius: '10px' }}
+                                                                >
+                                                                    {dateFormat(new Date(msg.createdAt || ''), "dddd, mmmm dS, yyyy")}
+                                                                </span>
+                                                            </div>
+                                                        }
+                                                        <Message nextIsMe={nextIsMe} nextIsUser={nextIsUser} me={ownUser?._id === msg.sender} msg={msg} />
+                                                    </>
                                                 </div>
                                             })}
-                                            {sendingMsg &&
-                                                <div ref={scrollRef} className="send-msg-spinner-cont">
-                                                    <Spinner className="send-msg-spinner" animation="border" role="status" variant="primary">
-                                                    </Spinner>
-                                                </div>
-                                            }
+
 
                                         </div>
                                     </div>
@@ -659,7 +697,8 @@ const ChatPage = () => {
                                                         id='file'
                                                         ref={inputFile}
                                                         style={{ display: 'none' }}
-                                                        onChange={(e) => console.log('file selected', e.target.value, '--------', e.target.files[0])}
+                                                        onChange={handleFileSelect}
+                                                        accept='image/*'
                                                     />
                                                     <Button
                                                         onClick={() => inputFile.current.click()}
@@ -668,6 +707,58 @@ const ChatPage = () => {
                                                     >
                                                         <FileAttachIcon />
                                                     </Button>
+                                                    <Modal
+                                                        aria-labelledby="contained-modal-title-vcenter"
+                                                        centered
+                                                        // show={true}
+                                                        show={showSendImageModal}
+
+                                                    >
+                                                        <Modal.Header closeButton>
+                                                            <Modal.Title id="contained-modal-title-vcenter">
+                                                                Send Image
+                                                            </Modal.Title>
+                                                        </Modal.Header>
+                                                        <Modal.Body >
+                                                            <Container
+                                                                fluid
+                                                                className='d-flex justify-content-center'
+                                                            >
+                                                                <Row style={{ maxWidth: '20rem', maxHeight: '20rem' }}>
+                                                                    {/* <Image ref={selectedImageRef} fluid /> */}
+                                                                    <Image src={selectedImageUrl} fluid />
+
+                                                                </Row>
+                                                            </Container>
+                                                            <div className='chatPageStyles me-3 ms-3 mt-3'>
+                                                                <Row>
+                                                                    <InputGroup>
+                                                                        <FormControl as="textarea"
+                                                                            className="textarea"
+                                                                            onChange={handleTextareaChange}
+                                                                            onKeyDown={handleTextareaKeyPress}
+                                                                            // onChange={(e) => setTypedText(e.target.value)}
+                                                                            value={typedText}
+                                                                            placeholder="Add caption"
+                                                                            rows={chatTextareaRows.rows}
+                                                                        // styles={{ marginRight: "10px" }}
+                                                                        />
+                                                                        <div className='d-flex ms-3 mb-0'>
+                                                                            <div
+                                                                                className='send-blob-cont bg-primary'
+                                                                                onClick={() => { messageTypeRef.current = 'IMAGE_MESSAGE'; handleSendMessage() }}>
+                                                                                {/* <SendIcon /> */}
+                                                                                <img className='send-img' src={sendIcon} />
+                                                                            </div>
+                                                                        </div>
+                                                                    </InputGroup>
+                                                                </Row>
+                                                            </div>
+                                                        </Modal.Body>
+                                                        <Modal.Footer>
+                                                            <Button onClick={() => setShowSendImageModal(false)}>Close</Button>
+                                                        </Modal.Footer>
+                                                    </Modal>
                                                 </>
                                             }
 
