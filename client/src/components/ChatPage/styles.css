@@ -1,71 +1,55 @@
-
+/* 
 .chatPageStyles .container{
     outline:auto;
     outline-color: blue;
-}
+} */
 
-.mainContainer{
-    /* height:auto; */
-    min-height:59rem;
-    /* background-color:lightblue; */
-
-
-    /* background: linear-gradient(to right, #E9E4F0, #D3CCE3); */
-
-    /* background: linear-gradient(to right, #ffc0cb, #800080);  */
-
-    /* background: linear-gradient(to left, #74ebd5, #acb6e5); */
-
-
-}
 
 /* .chatPageStyles .row {
     /* outline: auto; */
     /* outline-color: red; */
 /* } */ */
 
-.chatPageStyles .rowOne{
-    height: 12%;
-}
 
-.chatPageStyles .rowTwo{
+/* .chatPageStyles .rowTwo{
     height: 85%;
-}
+} */
 
 .chatPageStyles .contactLists{
     /* max-height: 70%; */
     padding-top: 20px;
-    max-height: 43rem;
+    /* max-height: inherit; */
     overflow-y: auto;
 }
 
 .chatPageStyles .chatSection{
-    height: 49rem;
+  
+    /* height: 49rem; */
     /* outline: auto; */
     position: relative;
-    margin-left: 7px;
+    /* margin-left: 7px;
     padding-left: 7px;
-    padding-top: 10px;;
+    padding-top: 10px;; */
 }
 
 .chatPageStyles .sendSection{
     position: absolute;
     width: 90%;
     /* height: 100px; */
-    bottom: 10px;
+    bottom: 25px;
     margin-left: 25px;
 }
 
 
 .chatPageStyles .textarea {
-    /* height: 20px; */
-    /* height: 75px; */
-    /* resize: none; */
+    height: 20px;
+    height: 75px;
+    resize: none;
     box-sizing: border-box;
     border: none;
     border-bottom: 1px solid #1890ff;
     border-width: 4px;
-    border-radius: 3px;
+    border-radius: 10px;
     resize: none ;
     font-size: 20px;
     line-height: 24px;
@@ -76,10 +60,26 @@
     
 }
 
-.chatPageStyles .search-textarea {
+/* .chatPageStyles .search-textarea {
     border-bottom: 1px solid #1890ff;
     border-width: thin;
     
+} */
+
+
+textarea:focus, 
+textarea.form-control:focus, 
+input.form-control:focus, 
+input[type=text]:focus, 
+input[type=password]:focus, 
+input[type=email]:focus, 
+input[type=number]:focus, 
+[type=text].form-control:focus, 
+[type=password].form-control:focus, 
+[type=email].form-control:focus, 
+[type=tel].form-control:focus, 
+[contenteditable].form-control:focus {
+  box-shadow: inset 0 -1px 0 #ddd;
 }
 
 
@@ -95,7 +95,7 @@
   .chatPageStyles .messageSection{
       padding-top: 10px;
       overflow-y: auto;
-      max-height: 42rem;
+      /* max-height: 42rem; */
   }
 
   .chatPageStyles .scrollIconBtn{
@@ -142,29 +142,30 @@
   /* scrollbar css */
   /* width */
   .chatPageStyles ::-webkit-scrollbar {
-    width: 10px;
+    width: 6px;
+    background: #c47272;
   }
   
   /* Track */
   .chatPageStyles ::-webkit-scrollbar-track {
-    background: #f1f1f1;
+    background: #faf6f6;
   }
   
   /* Handle */
   .chatPageStyles ::-webkit-scrollbar-thumb {
-    background: #888;
+    background: rgb(223, 214, 214);
   }
   
   /* Handle on hover */
   .chatPageStyles ::-webkit-scrollbar-thumb:hover {
-    background: #555;
+    
+    background: rgb(219, 212, 212);
   }
 
 
 
 
   .blob-cont{
-    background: rgba(255, 82, 82, 1);
 
     border-radius: 50%;
     box-shadow: 0 0 0 0 rgba(0, 0, 0, 1);
@@ -189,7 +190,6 @@
 
 
 .send-blob-cont:hover{
-    background: rgb(190, 97, 97);
     cursor: pointer;
 }
 
@@ -211,15 +211,15 @@
     /* background: black; */
    
     transform: scale(1);
-    animation: pulse-black 1s infinite;
+    animation: pulse-blue 1s infinite;
 }
 
-.blob.red {
+.blob.blue {
     box-shadow: 0 0 0 0 rgb(82, 114, 255);
-    animation: pulse-red 1s infinite;
+    animation: pulse-blue 1s infinite;
   }
   
-  @keyframes pulse-red {
+  @keyframes pulse-blue {
     0% {
       transform: scale(0.95);
       box-shadow: 0 0 0 0 rgba(40, 156, 251, 0.7);
@@ -236,3 +236,31 @@
     }
   }
 
+  
+
+  /****************Menu humberger ICon*/
+
+
+  .my-dropdown-toggle:after {
+    display: none;
+}
+
+
+
+.shit{
+
+  background: -webkit-linear-gradient(323deg, rgb(226, 216, 154) 0%, rgb(152, 177, 137) 17%, rgb(154, 177, 123) 55%, rgb(231, 216, 125) 90%);
+  background: -o-linear-gradient(323deg, rgb(226, 216, 154) 0%, rgb(152, 177, 137) 17%, rgb(154, 177, 123) 55%, rgb(231, 216, 125) 90%);
+  background: -ms-linear-gradient(323deg, rgb(226, 216, 154) 0%, rgb(152, 177, 137) 17%, rgb(154, 177, 123) 55%, rgb(231, 216, 125) 90%);
+  background: -moz-linear-gradient(323deg, rgb(226, 216, 154) 0%, rgb(152, 177, 137) 17%, rgb(154, 177, 123) 55%, rgb(231, 216, 125) 90%);
+  background: linear-gradient(127deg, rgb(226, 216, 154) 0%, rgb(152, 177, 137) 17%, rgb(154, 177, 123) 55%, rgb(231, 216, 125) 90%);
+}
+
+
+.back-button{
+  background: white;
+  transition: .4s;
+}
+.back-button:hover{
+  background: rgb(236, 236, 241);
+}

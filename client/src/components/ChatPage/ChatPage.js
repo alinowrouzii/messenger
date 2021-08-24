@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { useStateRef } from './../../utils'
-import { Container, Row, Col, InputGroup, Button, FormControl, Form, Modal, Alert, Spinner, Image } from 'react-bootstrap';
+import { Container, Row, Col, InputGroup, Button, FormControl, Form, Modal, Alert, Spinner, Image, Dropdown } from 'react-bootstrap';
 import ProfileInfo from './../Utils/ProfileInfo/ProfileInfo';
 import ProfileInfoWIthAddBtn from './../Utils/ProfileInfo/ProfileInfoWithAddBtn';
 import Message from './../Utils/Message/Message'
@@ -32,6 +32,8 @@ import { ReactComponent as FileAttachIcon } from './../../Images/file-attach.svg
 import scrollDownIcon from './../../Images/scroll-down.png'
 import useRecorder from '../../utils/useRecorder';
 import dateFormat from "dateformat";
+
+import { ArrowLeft } from 'react-bootstrap-icons';
 
 
 const ChatPage = () => {
@@ -302,7 +304,12 @@ const ChatPage = () => {
 
             const receiver = selectedChatRef.current?.users[0]._id === ownUser?._id ? selectedChatRef.current?.users[1]._id : selectedChatRef.current?.users[0]._id;
 
-            socket.emit("sendMessage", { receiver, _id: data.messageId, ...newMsg });
+            socket.emit("sendMessage", {
+                receiver,
+                _id: data.messageId,
+                createdAt: Date.now(),
+                ...newMsg
+            });
 
             console.log('message sent');
         }).catch((err) => {
@@ -322,7 +329,7 @@ const ChatPage = () => {
 
     }
 
-    const handleGetMessages = (chat) => (e) => {
+    const handleGetMessages = (chat) => {
 
 
         setTypedText("");
@@ -467,37 +474,6 @@ const ChatPage = () => {
 
             messageTypeRef.current = 'AUDIO_MESSAGE';
             handleSendMessage();
-            // const sender = ownUser?._id;
-            // const chat = selectedChat?._id;
-            // const kind = 'AUDIO_MESSAGE';
-            // const messageId = uuidv4();
-            // const text = typedText.trim();
-            // setTypedText('');
-            // const newMsg = {
-            //     //client id is unique id to recongnize the message when message is sent
-            //     sender, chat, kind, text,
-            //     //pending means message is not sent yet!
-            //     pending: true
-            // }
-
-            // dispatch(sendMessage({
-            //     _id: messageId,
-            //     data: audioData,
-            //     ...newMsg
-            // })).then((data) => {
-
-            //     const receiver = selectedChatRef.current?.users[0]._id === ownUser?._id ? selectedChatRef.current?.users[1]._id : selectedChatRef.current?.users[0]._id;
-
-            //     socket.emit("sendMessage", { receiver, _id: data.messageId, ...newMsg });
-
-            //     console.log('message sent');
-            // }).catch((err) => {
-            //     console.log(err)
-            //     setModalTitle("Message sending Error");
-            //     setModalBodyText(messagesInfo);
-            //     setShowModal(true);
-            // });
-
 
         }
     }, [audioData])
@@ -526,287 +502,466 @@ const ChatPage = () => {
     }
 
 
+    const [profileInfoShow, setProfileInfoShow] = useState(false);
+
+    const showProfileInfo = () => {
+
+        setProfileInfoShow(true);
+    }
+
+
+    const [chatSectionShow, setChatSectionShow] = useState(true);
+    const [contactSectionShow, setContactSectionShow] = useState(true);
+    const mobileDispaly = useRef(false);
+    useEffect(() => {
+        if (window.innerWidth < 450) {
+            mobileDispaly.current = true;
+
+            setChatSectionShow(false);
+            setContactSectionShow(true);
+        }
+
+        window.addEventListener('resize', () => {
+            if (window.innerWidth <= 575) {
+                mobileDispaly.current = true;
+
+                setChatSectionShow(false);
+                setContactSectionShow(true);
+            } else {
+                mobileDispaly.current = false;
+
+                setChatSectionShow(true);
+                setContactSectionShow(true);
+            }
+        })
+        console.log('disss', mobileDispaly.current)
+    }, []);
+
+
+
+
     return (
         <>
-            <Container className="mainContainer chatPageStyles" fluid>
-                {/* <Row className="rowOne mb-3 bg-primary text-white p-2">
-                    <Col className='' lg={10} style={{ marginTop: "15px", marginBottom: "10px" }}>
-                        <Navbar logout={handleLogout} />
+            <Container
+                style={{ maxHeight: '100vh' }}
+                className="chatPageStyles"
+                
+            >
 
-                    </Col>
-                        <Button onClick={handleLogout}>logout</Button>
-                    <Col className='' lg={2} style={{ marginTop: "15px", marginBottom: "10px" }}>
-                        <MyProfileInfo />
-                    </Col>
-                </Row> */}
-                <Row className="rowTwo">
-                    <Col lg={2} sm={4} className="shadow-lg rounded">
-                        <Row>
+                <Row>
 
-                            <InputGroup className="mb-2">
-                                <Button active={friendButtonSelected}
-                                    onClick={() => setFriendButtonSelected(true)}
-                                    className="shadow-none"
-                                    variant="secondary"
+                    {contactSectionShow &&
+
+                        <Col lg={3} sm={4} className="shadow-lg rounded">
+                            <Container
+                                className='p-0'
+                                style={{ height: '100vh' }}
+                            >
+                                <Row
+                                    className='p-0 '
+                                    style={{ height: '8%' }}
                                 >
-                                    Ur friends
-                                </Button>
-                                <Button active={!friendButtonSelected}
-                                    onClick={() => setFriendButtonSelected(false)}
-                                    className="shadow-none"
-                                    variant="secondary"
-                                >
-                                    All users
-                                </Button>
-                            </InputGroup>
-                        </Row>
-                        <Row>
-                            <InputGroup className="mb-3">
-                                <FormControl
-                                    onChange={(e) => setSearchBarText(e.target.value)}
-                                    value={searchBarText}
-                                    aria-label="Enter the username!"
-                                    className="textarea search-textarea"
-                                    placeholder="Enter userName"
 
-                                />
-                                <Button
-                                    onClick={handleSearchUsers}
-                                    variant="secondary"
-                                    className="shadow-none sendMsgBtn ms-1"
-                                >
-                                    {filteredUserIsActive ? "Cancel!" : "Search!"}
-                                </Button>
-                            </InputGroup>
-                        </Row>
-                        <Row className="contactLists">
+                                    <Container
+                                        className='p-1 mt-2'
+                                        style={{ height: '100%' }}
+                                    >
 
-                            {ownUserIsReady && chatsIsReady && !searchedUsersIsReady ?
-                                chats?.filter(chat => chat.users[0]._id === ownUser._id ? (chat.users[1].username.includes(fliteredUsersText)) : ((chat.users[0].username.includes(fliteredUsersText))))
-                                    .map((chat) =>
-                                        <div key={chat._id}
-                                            onClick={handleGetMessages(chat)}
-                                            className="mb-1"
+                                        <InputGroup className="mb-3">
+
+                                            <Dropdown
+                                                className='m-1'
+                                            >
+                                                <Dropdown.Toggle
+                                                    variant='secondary'
+                                                    className=' pb-1 pt-1 ps-2 pe-2 my-dropdown-toggle'
+                                                >
+                                                    ☰
+                                                </Dropdown.Toggle>
+
+                                                <Dropdown.Menu  >
+                                                    <Dropdown.Item
+                                                        style={{ cursor: 'initial' }}
+                                                    >
+                                                        <Button
+                                                            onClick={handleLogout}
+                                                            style={{
+                                                                width: '100%',
+                                                                borderRadius: '6px'
+                                                            }}
+                                                            variant='danger'
+                                                        >
+                                                            Logout
+
+                                                        </Button>
+                                                    </Dropdown.Item>
+
+                                                    <Dropdown.Item
+                                                        style={{ cursor: 'initial' }}
+                                                    >
+                                                        <Button
+                                                            onClick={handleLogout}
+                                                            style={{
+                                                                width: '100%'
+                                                            }}
+                                                            variant='danger'
+                                                        >
+                                                            Logout
+
+                                                        </Button>
+                                                    </Dropdown.Item>
+
+                                                </Dropdown.Menu>
+                                            </Dropdown>
+
+                                            <FormControl
+                                                onChange={(e) => setSearchBarText(e.target.value)}
+                                                value={searchBarText}
+                                                aria-label="Enter the username!"
+                                                className="pt-0 pb-0 outline-none"
+                                                placeholder="Search!"
+                                                style={{
+                                                    resize: 'none',
+                                                    borderRadius: '10px',
+                                                    height: '40px'
+                                                }}
+
+                                            />
+                                        </InputGroup>
+                                    </Container>
+
+                                </Row>
+                                <Row
+                                    className='p-0'
+                                    style={{ height: '92%' }}
+                                // className='border border-info'
+                                >
+
+                                    <Container
+                                        className='pt-3'
+                                        style={{
+                                            maxHeight: '100%', overflowY: 'auto'
+                                        }}
+                                    >
+
+                                        {ownUserIsReady && chatsIsReady && !searchedUsersIsReady ?
+                                            chats?.filter(chat => chat.users[0]._id === ownUser._id ? (chat.users[1].username.includes(fliteredUsersText)) : ((chat.users[0].username.includes(fliteredUsersText))))
+                                                .map((chat) =>
+                                                    <div key={chat._id}
+                                                        onClick={() => {
+                                                            handleGetMessages(chat);
+                                                            if (mobileDispaly.current) {
+                                                                setContactSectionShow(false);
+                                                                setChatSectionShow(true);
+                                                            }
+                                                        }}
+                                                        className="mb-1"
+                                                    >
+                                                        <ProfileInfo
+                                                            chat={chat}
+                                                            user={chat.users[0]._id === ownUser._id ? chat.users[1] : chat.users[0]}
+                                                        />
+                                                    </div>
+                                                )
+                                            :
+                                            searchedUsersIsReady &&
+                                            searchedUsers.map((user) =>
+                                                <div key={user._id}
+                                                    className="mb-3">
+                                                    <ProfileInfoWIthAddBtn user={user} />
+                                                </div>
+                                            )
+                                        }
+                                    </Container>
+                                </Row>
+                            </Container>
+
+                        </Col>
+                    }
+                    {chatSectionShow &&
+
+                        <Col lg={profileInfoShow ? 7 : 8} sm={8}
+                        >
+
+                            <Row
+                                style={{ height: '100vh' }}
+                                className='p-0 shit'
+                            >
+
+                                {/* {selectedChat && messagesIsReady && */}
+                                {/* Add some extra condition to load messages and profile info in the same time */}
+                                <Animated animationIn="fadeIn" animationOut="fadeOut" isVisible={ownUserIsReady && chatsIsReady && selectedChat && messagesIsReady}>
+                                    {ownUserIsReady && chatsIsReady && selectedChat && messagesIsReady &&
+
+                                        <div
+                                            className={"chatSection " + (selectedChat && messagesIsReady && "shadow-lg rounded")}
+                                            style={{ height: '99%' }}
                                         >
-                                            <ProfileInfo chat={chat} user={chat.users[0]._id === ownUser._id ? chat.users[1] : chat.users[0]} />
-                                        </div>
-                                    )
-                                :
-                                searchedUsersIsReady &&
-                                searchedUsers.map((user) =>
-                                    <div key={user._id}
-                                        className="mb-3">
-                                        <ProfileInfoWIthAddBtn user={user} />
-                                    </div>
-                                )
-                            }
-                        </Row>
-                    </Col>
 
-                    <Col lg={8} sm={8}>
-                        {/* {selectedChat && messagesIsReady && */}
-                        {/* Add some extra condition to load messages and profile info in the same time */}
+                                            <div
+                                                className="rounded mt-1 border d-flex"
+                                                style={{
+                                                    width: '100%',
+                                                    /* height: 100px; */
+                                                    // marginLeft: '25px'
+                                                    margin: 'auto',
+                                                    // height: '8vh'
+                                                    height: '77px'
+                                                }}
+                                            >
 
-                        <Animated animationIn="fadeIn" animationOut="fadeOut" isVisible={ownUserIsReady && chatsIsReady && selectedChat && messagesIsReady}>
-                            {ownUserIsReady && chatsIsReady && selectedChat && messagesIsReady &&
+                                                {ownUserIsReady && chatsIsReady && selectedChat &&
+                                                    <>
+                                                        {mobileDispaly.current &&
+                                                            <Button
+                                                                className=' border-0 back-button'
+                                                                style={{ borderRadius: '0' }}
+                                                                onClick={() => {
+                                                                    setChatSectionShow(false);
+                                                                    setContactSectionShow(true)
+                                                                }}
+                                                            >
+                                                                <ArrowLeft color="black" size={30} />
+                                                            </Button>
+                                                        }
+                                                        <div
+                                                            //TODO
+                                                            className='bg-white'
+                                                            onClick={() => showProfileInfo()}
+                                                            style={{ width: '100%' }}
+                                                        >
 
-                                <div className={"chatSection " + (selectedChat && messagesIsReady && "shadow-lg rounded")}>
+                                                            <ProfileInfo
+                                                                chat={selectedChatRef.current}
+                                                                user={selectedChatRef.current.users[0]._id === ownUser._id ? selectedChatRef.current.users[1] : selectedChatRef.current.users[0]}
 
-                                    <div className="position-relative">
-
-                                        <div className="position-absolute fixed-bottom">
-                                            <Animated animationIn="fadeIn" animationOut="fadeOut" isVisible={scrollToBottomShow}>
-
-                                                {scrollToBottomShow
-                                                    && <Button className="mb-3 bg-transparent shadow-none border-0 outline-0 scrollIconBtn" onClick={handleScrollToBottomBtn}>
-                                                        {/* scroll to bottom */}
-
-                                                        <img src={scrollDownIcon} className="scrollIconBtn" />
-
-                                                    </Button>
-                                                }
-                                            </Animated>
-                                        </div>
-                                        <div className="messageSection " ref={chatScrollRef} onScroll={handleMessagesScroll}>
-                                            {/* <div className="messageSection" onScroll={handleMessageScroll}> */}
-                                            {messages?.map((msg, i, messages) => {
-                                                let nextIsMe = false;
-                                                let nextIsUser = false;
-                                                let sameDay = false;
-                                                if (i < messages.length - 1) {
-                                                    nextIsMe = messages[i + 1].sender === ownUser?._id;
-                                                    nextIsUser = !nextIsMe;
+                                                            />
+                                                        </div>
+                                                    </>
                                                 }
 
-                                                if (i > 0) {
-                                                    //check that current message and next message is in the same day or not
-                                                    const createdAt = new Date(msg.createdAt);
-                                                    const createdAt2 = new Date(messages[i - 1].createdAt);
-                                                    {/* createdAt.getFullYear() === createdAt2.getFullYear() &&
+                                            </div>
+
+                                            <div className="position-relative">
+
+                                                <div className="position-absolute fixed-bottom">
+                                                    <Animated animationIn="fadeIn" animationOut="fadeOut" isVisible={scrollToBottomShow}>
+
+                                                        {scrollToBottomShow
+                                                            && <Button className="mb-3 bg-transparent shadow-none border-0 outline-0 scrollIconBtn" onClick={handleScrollToBottomBtn}>
+                                                                {/* scroll to bottom */}
+
+                                                                <img src={scrollDownIcon} className="scrollIconBtn" />
+
+                                                            </Button>
+                                                        }
+                                                    </Animated>
+                                                </div>
+                                                <div className="messageSection"
+                                                    style={{
+                                                        maxHeight: '80vh'
+                                                    }}
+
+                                                    ref={chatScrollRef} onScroll={handleMessagesScroll}
+                                                >
+                                                    {/* <div className="messageSection" onScroll={handleMessageScroll}> */}
+                                                    {messages?.map((msg, i, messages) => {
+                                                        let nextIsMe = false;
+                                                        let nextIsUser = false;
+                                                        let sameDay = false;
+                                                        if (i < messages.length - 1) {
+                                                            nextIsMe = messages[i + 1].sender === ownUser?._id;
+                                                            nextIsUser = !nextIsMe;
+                                                        }
+
+                                                        if (i > 0) {
+                                                            //check that current message and next message is in the same day or not
+                                                            const createdAt = new Date(msg.createdAt);
+                                                            const createdAt2 = new Date(messages[i - 1].createdAt);
+                                                            {/* createdAt.getFullYear() === createdAt2.getFullYear() &&
                                                         createdAt.getMonth() === createdAt2.getMonth() &&
                                                         createdAt.getDate() === createdAt2.getDate() */}
-                                                    if (
-                                                        createdAt.getHours() === createdAt2.getHours()
-                                                    ) {
-                                                        sameDay = true;
-                                                    }
-                                                }
-
-                                                return <div ref={scrollRef} key={msg._id}>
-                                                    {/* nextIsMe shows that next message belongs to ownUser or not */}
-                                                    <>
-                                                        {!sameDay && msg.createdAt &&
-                                                            <div className='d-flex justify-content-center mb-2'>
-                                                                <span
-                                                                    className=' shadow-sm p-1 user-select-none'
-                                                                    style={{ borderRadius: '10px' }}
-                                                                >
-                                                                    {dateFormat(new Date(msg.createdAt || ''), "dddd, mmmm dS, yyyy")}
-                                                                </span>
-                                                            </div>
+                                                            if (
+                                                                createdAt.getHours() === createdAt2.getHours()
+                                                            ) {
+                                                                sameDay = true;
+                                                            }
                                                         }
-                                                        <Message nextIsMe={nextIsMe} nextIsUser={nextIsUser} me={ownUser?._id === msg.sender} msg={msg} />
-                                                    </>
-                                                </div>
-                                            })}
 
-
-                                        </div>
-                                    </div>
-
-                                    <div className="sendSection shadow-lg">
-
-                                        <InputGroup>
-                                            {/* <Picker style={{ position: 'absolute', bottom: '10px', left: '10px' }} set='apple' onSelect={(e) => setTypedText(prevtext => (prevtext + e.native))} title='Pick your emoji…' emoji='point_up' emojiTooltip={true} /> */}
-
-                                            <FormControl as="textarea"
-                                                className="textarea"
-                                                onChange={handleTextareaChange}
-                                                onKeyDown={handleTextareaKeyPress}
-                                                // onChange={(e) => setTypedText(e.target.value)}
-                                                value={typedText}
-                                                placeholder="type something"
-                                                rows={chatTextareaRows.rows}
-                                            // styles={{ marginRight: "10px" }}
-                                            />
-
-                                            {!isRecording &&
-                                                <>
-                                                    <input
-                                                        type='file'
-                                                        id='file'
-                                                        ref={inputFile}
-                                                        style={{ display: 'none' }}
-                                                        onChange={handleFileSelect}
-                                                        accept='image/*'
-                                                    />
-                                                    <Button
-                                                        onClick={() => inputFile.current.click()}
-                                                        className='bg-transparent border-0 ms-2'
-                                                        style={{ width: '3rem', height: '3rem' }}
-                                                    >
-                                                        <FileAttachIcon />
-                                                    </Button>
-                                                    <Modal
-                                                        aria-labelledby="contained-modal-title-vcenter"
-                                                        centered
-                                                        // show={true}
-                                                        show={showSendImageModal}
-
-                                                    >
-                                                        <Modal.Header closeButton>
-                                                            <Modal.Title id="contained-modal-title-vcenter">
-                                                                Send Image
-                                                            </Modal.Title>
-                                                        </Modal.Header>
-                                                        <Modal.Body >
-                                                            <Container
-                                                                fluid
-                                                                className='d-flex justify-content-center'
-                                                            >
-                                                                <Row style={{ maxWidth: '20rem', maxHeight: '20rem' }}>
-                                                                    {/* <Image ref={selectedImageRef} fluid /> */}
-                                                                    <Image src={selectedImageUrl} fluid />
-
-                                                                </Row>
-                                                            </Container>
-                                                            <div className='chatPageStyles me-3 ms-3 mt-3'>
-                                                                <Row>
-                                                                    <InputGroup>
-                                                                        <FormControl as="textarea"
-                                                                            className="textarea"
-                                                                            onChange={handleTextareaChange}
-                                                                            onKeyDown={handleTextareaKeyPress}
-                                                                            // onChange={(e) => setTypedText(e.target.value)}
-                                                                            value={typedText}
-                                                                            placeholder="Add caption"
-                                                                            rows={chatTextareaRows.rows}
-                                                                        // styles={{ marginRight: "10px" }}
-                                                                        />
-                                                                        <div className='d-flex ms-3 mb-0'>
-                                                                            <div
-                                                                                className='send-blob-cont bg-primary'
-                                                                                onClick={() => { messageTypeRef.current = 'IMAGE_MESSAGE'; handleSendMessage() }}>
-                                                                                {/* <SendIcon /> */}
-                                                                                <img className='send-img' src={sendIcon} />
-                                                                            </div>
-                                                                        </div>
-                                                                    </InputGroup>
-                                                                </Row>
-                                                            </div>
-                                                        </Modal.Body>
-                                                        <Modal.Footer>
-                                                            <Button onClick={() => setShowSendImageModal(false)}>Close</Button>
-                                                        </Modal.Footer>
-                                                    </Modal>
-                                                </>
-                                            }
-
-
-                                            {typedText.trim().length === 0 || isRecording ?
-                                                <div className='d-flex ms-3 mb-0'>
-                                                    {isRecording
-                                                        && <div className='d-inline blob-cont me-2' onClick={cancelRecording}>
-                                                            <CancelIcon />
+                                                        return <div ref={scrollRef} key={msg._id}>
+                                                            {/* nextIsMe shows that next message belongs to ownUser or not */}
+                                                            <>
+                                                                {!sameDay && msg.createdAt &&
+                                                                    <div className='d-flex justify-content-center mb-2'>
+                                                                        <span
+                                                                            className=' shadow-sm p-1 user-select-none'
+                                                                            style={{ borderRadius: '10px' }}
+                                                                        >
+                                                                            {dateFormat(new Date(msg.createdAt || ''), "dddd, mmmm dS, yyyy")}
+                                                                        </span>
+                                                                    </div>
+                                                                }
+                                                                <Message nextIsMe={nextIsMe} nextIsUser={nextIsUser} me={ownUser?._id === msg.sender} msg={msg} />
+                                                            </>
                                                         </div>
+                                                    })}
+
+
+                                                </div>
+                                            </div>
+
+                                            {/* send section */}
+                                            <div
+                                                className=" bg-transparent"
+                                                style={{
+                                                    position: 'absolute',
+                                                    width: '90%',
+                                                    /* height: 100px; */
+                                                    bottom: '10px',
+                                                    marginLeft: '25px'
+                                                }}
+                                            >
+
+                                                <InputGroup>
+                                                    {/* <Picker style={{ position: 'absolute', bottom: '10px', left: '10px' }} set='apple' onSelect={(e) => setTypedText(prevtext => (prevtext + e.native))} title='Pick your emoji…' emoji='point_up' emojiTooltip={true} /> */}
+
+                                                    <FormControl as="textarea"
+                                                        className="textarea"
+                                                        onChange={handleTextareaChange}
+                                                        onKeyDown={handleTextareaKeyPress}
+                                                        // onChange={(e) => setTypedText(e.target.value)}
+                                                        value={typedText}
+                                                        placeholder="type something"
+                                                        rows={chatTextareaRows.rows}
+                                                    // styles={{ marginRight: "10px" }}
+                                                    />
+
+                                                    {!isRecording &&
+                                                        <>
+                                                            <input
+                                                                type='file'
+                                                                id='file'
+                                                                ref={inputFile}
+                                                                style={{ display: 'none' }}
+                                                                onChange={handleFileSelect}
+                                                                accept='image/*'
+                                                            />
+                                                            <Button
+                                                                onClick={() => inputFile.current.click()}
+                                                                className='bg-transparent border-0 ms-2'
+                                                                style={{ width: '3rem', height: '3rem' }}
+                                                            >
+                                                                <FileAttachIcon />
+                                                            </Button>
+                                                            <Modal
+                                                                aria-labelledby="contained-modal-title-vcenter"
+                                                                centered
+                                                                // show={true}
+                                                                show={showSendImageModal}
+
+                                                            >
+                                                                <Modal.Header closeButton>
+                                                                    <Modal.Title id="contained-modal-title-vcenter">
+                                                                        Send Image
+                                                                    </Modal.Title>
+                                                                </Modal.Header>
+                                                                <Modal.Body >
+                                                                    <Container
+                                                                        fluid
+                                                                        className='d-flex justify-content-center'
+                                                                    >
+                                                                        <Row style={{ maxWidth: '20rem', maxHeight: '20rem' }}>
+                                                                            {/* <Image ref={selectedImageRef} fluid /> */}
+                                                                            <Image src={selectedImageUrl} fluid />
+
+                                                                        </Row>
+                                                                    </Container>
+                                                                    <div className='chatPageStyles me-3 ms-3 mt-3'>
+                                                                        <Row>
+                                                                            <InputGroup>
+                                                                                <FormControl as="textarea"
+                                                                                    className="textarea"
+                                                                                    onChange={handleTextareaChange}
+                                                                                    onKeyDown={handleTextareaKeyPress}
+                                                                                    // onChange={(e) => setTypedText(e.target.value)}
+                                                                                    value={typedText}
+                                                                                    placeholder="Add caption"
+                                                                                    rows={chatTextareaRows.rows}
+                                                                                // styles={{ marginRight: "10px" }}
+                                                                                />
+                                                                                <div className='d-flex ms-3 mb-0'>
+                                                                                    <div
+                                                                                        className='send-blob-cont bg-primary'
+                                                                                        onClick={() => { messageTypeRef.current = 'IMAGE_MESSAGE'; handleSendMessage() }}>
+                                                                                        {/* <SendIcon /> */}
+                                                                                        <img className='send-img' src={sendIcon} />
+                                                                                    </div>
+                                                                                </div>
+                                                                            </InputGroup>
+                                                                        </Row>
+                                                                    </div>
+                                                                </Modal.Body>
+                                                                <Modal.Footer>
+                                                                    <Button onClick={() => setShowSendImageModal(false)}>Close</Button>
+                                                                </Modal.Footer>
+                                                            </Modal>
+                                                        </>
                                                     }
-                                                    <div className={'d-inline blob-cont ' + (isRecording && ' blob red bg-primary')} onClick={() => isRecording ? stopRecording() : startRecording()}>
 
-                                                        {/* <Button className='blob red' style={{ width: '3rem', height: '3rem' }} className='rounded-circle' onClick={startRecording} disabled={isRecording} variant='danger'> */}
 
-                                                        {isRecording ?
-                                                            <div>
+                                                    {typedText.trim().length === 0 || isRecording ?
+                                                        <div className='d-flex ms-3 mb-0'>
+                                                            {isRecording
+                                                                && <div className='d-inline blob-cont me-2 bg-danger' onClick={cancelRecording}>
+                                                                    <CancelIcon />
+                                                                </div>
+                                                            }
+                                                            <div className={'d-inline blob-cont ' + (isRecording ? ' blob blue bg-primary' : ' bg-white')} onClick={() => isRecording ? stopRecording() : startRecording()}>
+
+                                                                {/* <Button className='blob red' style={{ width: '3rem', height: '3rem' }} className='rounded-circle' onClick={startRecording} disabled={isRecording} variant='danger'> */}
+
+                                                                {isRecording ?
+                                                                    <div>
+                                                                        <img className='send-img' src={sendIcon} />
+                                                                    </div>
+                                                                    :
+                                                                    <MicIcon />
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                        :
+                                                        <div className='d-flex ms-3 mb-0'>
+                                                            <div className='send-blob-cont bg-primary' onClick={handleSendMessage}>
+                                                                {/* <SendIcon /> */}
                                                                 <img className='send-img' src={sendIcon} />
                                                             </div>
-                                                            :
-                                                            <MicIcon />
-                                                        }
-                                                    </div>
-                                                </div>
-                                                :
-                                                <div className='d-flex ms-3 mb-0'>
-                                                    <div className='send-blob-cont bg-primary' onClick={handleSendMessage}>
-                                                        {/* <SendIcon /> */}
-                                                        <img className='send-img' src={sendIcon} />
-                                                    </div>
-                                                </div>
+                                                        </div>
 
-                                            }
-                                            {/* <Button onClick={handleSendMessage} className="shadow-none sendMsgBtn rounded ms-3 mb-0 text-white" variant="primary">
+                                                    }
+                                                    {/* <Button onClick={handleSendMessage} className="shadow-none sendMsgBtn rounded ms-3 mb-0 text-white" variant="primary">
                                                     Send!
                                                 </Button> */}
-                                        </InputGroup>
+                                                </InputGroup>
 
-                                    </div>
-                                </div>
-                            }
-                        </Animated>
-                    </Col>
+                                            </div>
+                                        </div>
+                                    }
+                                </Animated>
+                            </Row>
+
+                        </Col>
+                    }
 
                     <Col lg={2}>
-                        <Animated animationIn="fadeIn" animationOut="fadeOut" isVisible={ownUserIsReady && chatsIsReady && selectedChat && messagesIsReady}>
-                            {ownUserIsReady && chatsIsReady && selectedChat && messagesIsReady &&
+                        <Animated animationIn="slideInRight" animationOut="slideInLeft" isVisible={ownUserIsReady && chatsIsReady && selectedChat && messagesIsReady && profileInfoShow}>
+                            {ownUserIsReady && chatsIsReady && selectedChat && messagesIsReady && profileInfoShow &&
                                 <div className="profileSection">
+                                    <Button
+                                        onClick={() => setProfileInfoShow(false)}
+                                    >
+                                        cancel
+                                    </Button>
+
                                     <Profile user={ownUser._id === selectedChat.users[0]._id ? selectedChat.users[1] : selectedChat.users[0]} ></Profile>
                                 </div>
                             }
@@ -816,7 +971,7 @@ const ChatPage = () => {
                 </Row>
             </Container>
 
-            <Modal show={showModal} onHide={() => console.log('message modal hided!')} animation={false}>
+            {/* <Modal show={showModal} onHide={() => console.log('message modal hided!')} animation={false}>
                 <Modal.Header>
                     <Modal.Title>{modalTitle}</Modal.Title>
                 </Modal.Header>
@@ -830,7 +985,7 @@ const ChatPage = () => {
                         Close
                     </Button>
                 </Modal.Footer>
-            </Modal>
+            </Modal> */}
         </>
     );
 };
