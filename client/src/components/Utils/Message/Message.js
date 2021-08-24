@@ -41,15 +41,40 @@ const Message = ({ me, msg, nextIsMe, nextIsUser }) => {
 
     const [imageIsLoaded, setImageIsLoaded] = useState(false);
 
+
+    const [isMobile, setMobile] = useState(false);
+
+    const [messageMaxWidth, setMessageMaxWidth] = useState('18rem')
+    useEffect(() => {
+        if (window.innerWidth < 450) {
+            setMobile(true);
+            setMessageMaxWidth('14rem');
+        }
+
+        window.addEventListener('resize', () => {
+            if (window.innerWidth < 450) {
+                setMobile(true);
+                setMessageMaxWidth('14rem');
+            }else{
+                setMobile(false);
+                setMessageMaxWidth('18rem');
+
+            }
+        })
+    },[]);
     return (
         <>
             {me ?
                 <div className={"d-flex " + (nextIsMe ? " mb-1" : " mb-2")}>
-                    <div className={"flex-grow-1 ms-1 " + (nextIsMe && ' my-msg-card-cont')}>
+                    <div className="flex-grow-1 ms-1 ">
                         {(msg_type === text_message_type ?
                             <Card
                                 className="shadow-lg me-3 text-white my-card-cont"
-                                style={{ maxWidth: '18rem', float: 'right', backgroundColor: "#3581eb" }}>
+                                style={{
+                                    maxWidth: messageMaxWidth || '14rem',
+                                    float: 'right',
+                                    backgroundColor: "#3581eb"
+                                }}>
                                 <Card.Body
                                     className='ps-2 pt-1'
                                 >
@@ -74,7 +99,7 @@ const Message = ({ me, msg, nextIsMe, nextIsUser }) => {
                             :
                             <Card
                                 className="shadow-lg me-3 text-white my-card-cont"
-                                style={{ maxWidth: '18rem', float: 'right', backgroundColor: "#3581eb" }}>
+                                style={{ maxWidth: messageMaxWidth || '14rem', float: 'right', backgroundColor: "#3581eb" }}>
                                 <Card.Body
                                     className='p-0 d-flex justify-content-center mb-0'
                                 >
@@ -101,8 +126,8 @@ const Message = ({ me, msg, nextIsMe, nextIsUser }) => {
                                                 // className='rounded'
                                                 src={msg.url || `${URL}/message/getMedia/${msg.chat}/${msg._id}`}
                                                 style={{
-                                                    minWidth: '15rem',
-                                                    minHeight: '15rem',
+                                                    minWidth: isMobile ? '14rem' : '15rem',
+                                                    minHeight: isMobile ? '14rem' : '15rem',
                                                     maxWidth: '100%', height: 'auto',
                                                     cursor: 'pointer',
                                                     borderTopLeftRadius: '10px',
@@ -162,22 +187,22 @@ const Message = ({ me, msg, nextIsMe, nextIsUser }) => {
                             </Card>
                         )}
                     </div>
-                    {!nextIsMe && <div className="flex-shrink-0 mb-1 align-self-end">
+                    {/* {!nextIsMe && <div className="flex-shrink-0 mb-1 align-self-end">
                         <img src={img} className="rounded-circle prof-img border" alt="img" />
-                    </div>}
+                    </div>} */}
                 </div>
 
                 :
 
                 <div className={"d-flex " + (nextIsUser ? " mb-1" : " mb-2")} >
-                    {!nextIsUser && <div className="flex-shrink-0 ms-2 align-self-end mb-1 ">
+                    {/* {!nextIsUser && <div className="flex-shrink-0 ms-2 align-self-end mb-1 ">
                         <img src={img} className="rounded-circle prof-img border" alt="img" />
-                    </div>}
-                    <div className={"flex-grow-1 " + (nextIsUser ? ' user-msg-card-cont' : ' ms-0')}>
+                    </div>} */}
+                    <div className='flex-grow-1  ms-2'>
                         {(msg_type === text_message_type ?
                             <Card
                                 className="shadow-lg user-card-cont"
-                                style={{ float: "left", maxWidth: '18rem', backgroundColor: "#c5c5c3" }}>
+                                style={{ float: "left", maxWidth: messageMaxWidth || '14rem', backgroundColor: "#c5c5c3" }}>
                                 <Card.Body
                                     className="pt-1 ps-2"
                                 >
@@ -197,7 +222,7 @@ const Message = ({ me, msg, nextIsMe, nextIsUser }) => {
                             :
                             <Card
                                 className="shadow-lg user-card-cont"
-                                style={{ float: "left", maxWidth: '18rem', backgroundColor: "#c5c5c3" }}>
+                                style={{ float: "left", maxWidth: messageMaxWidth || '14rem', backgroundColor: "#c5c5c3" }}>
                                 <Card.Body
                                     className="p-0 d-flex justify-content-center mb-0"
                                 >
@@ -210,8 +235,8 @@ const Message = ({ me, msg, nextIsMe, nextIsUser }) => {
                                                 className='pb-0 mb-0'
                                                 src={msg.url || `${URL}/message/getMedia/${msg.chat}/${msg._id}`}
                                                 style={{
-                                                    minWidth: '15rem',
-                                                    minHeight: '15rem',
+                                                    minWidth: isMobile ? '14rem' : '15rem',
+                                                    minHeight: isMobile ? '14rem' : '15rem',
                                                     maxWidth: '100%',
                                                     height: 'auto',
                                                     cursor: 'pointer',
