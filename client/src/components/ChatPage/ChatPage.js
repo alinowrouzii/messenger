@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { useStateRef } from './../../utils'
-import { Container, Row, Col, InputGroup, Button, FormControl, Form, Modal, Alert, Spinner, Image, Dropdown } from 'react-bootstrap';
+import { Container, Row, Col, InputGroup, Button, FormControl, Form, Modal, Alert, Spinner, Image, Dropdown, Toast, Card } from 'react-bootstrap';
 import ProfileInfo from './../Utils/ProfileInfo/ProfileInfo';
 import ProfileInfoWIthAddBtn from './../Utils/ProfileInfo/ProfileInfoWithAddBtn';
 import Message from './../Utils/Message/Message'
@@ -15,7 +15,7 @@ import { logout } from '../../store/actions/auth';
 import { getMe, getUserData, searchUsers } from '../../store/actions/user';
 import { addPendingMessage, getMessages, sendMessage } from '../../store/actions/message';
 import { getChats } from '../../store/actions/chat'
-import { SET_MESSAGE_READY, SET_CHATS_READY, SET_ONLINE_USERS, SET_NEW_MESSAGE_NOTIF, ADD_NEW_MESSAGE_NOTIF, REMOVE_NEW_MESSAGE_NOTIF, ADD_TYPING_USER, REMOVE_TYPING_USER } from './../../store/actions/types';
+import { SET_MESSAGE_READY, SET_CHATS_READY, SET_ONLINE_USERS, SET_NEW_MESSAGE_NOTIF, ADD_NEW_MESSAGE_NOTIF, REMOVE_NEW_MESSAGE_NOTIF, ADD_TYPING_USER, REMOVE_TYPING_USER, ADD_MESSAGE_FROM_SOCKET } from './../../store/actions/types';
 import { Animated } from "react-animated-css";
 import socket from "./../../socket";
 import { URL } from '../../constants';
@@ -28,6 +28,7 @@ import { ReactComponent as CancelIcon } from './../../Images/multiply.svg';
 // import { ReactComponent as SendIcon } from './../../Images/send-icon-reverse.svg';
 import sendIcon from './../../Images/send-icon-reverse.png';
 import { ReactComponent as FileAttachIcon } from './../../Images/file-attach.svg';
+// import { ReactComponent as XIcon } from './../../Images/.svg';
 
 import scrollDownIcon from './../../Images/scroll-down.png'
 import useRecorder from '../../utils/useRecorder';
@@ -80,13 +81,7 @@ const ChatPage = () => {
     const messagesInfo = useSelector(state => state.messageData.messageInfo)
     const messagesIsReady = useSelector(state => state.messageData.messagesIsReady);
 
-    const [onlineUsers, setOnlineUsers] = useState([]);
-
-    const [friends, setFriends] = useState([]);
-
     const [messages, setMessages] = useState([]);
-
-    const [sendingMsg, setSendingMsg] = useState(false);
 
     const [showModal, setShowModal] = useState(false);
     const [modalTitle, setModalTitle] = useState("");
@@ -111,7 +106,10 @@ const ChatPage = () => {
     useEffect(() => {
         scrollRef.current?.scrollIntoView({ behavior: "smooth" });
         setScrollToBottom(false);
-    }, [messages, messagesIsReady, sendingMsg]);
+        console.log('------------------');
+        console.log(messages)
+        console.log('------------------');
+    }, [messages, messagesIsReady]);
 
     useEffect(() => {
         console.log('hello');
@@ -163,9 +161,7 @@ const ChatPage = () => {
                         // onlineUsers: ownUser?.friends.filter((f) => users.some((u) => u._id === f))
                     }
                 })
-                setOnlineUsers(
-                    ownUser.friends.filter((f) => users.some((u) => u._id === f._id))
-                );
+
             });
             socket.on("connect_error", (err) => {
                 console.log('connect_error due to' + err.message);
@@ -175,7 +171,16 @@ const ChatPage = () => {
 
             socket.on("getMessage", (newMessage) => {
 
+                //TODO: add message to the redux state
                 selectedChatRef.current?.users.some(user => user._id === newMessage.sender) && setMessages(prev => [...prev, newMessage]);
+
+                selectedChatRef.current?.users.some(user => user._id === newMessage.sender) && dispatch({
+                    type: ADD_MESSAGE_FROM_SOCKET,
+                    payload: {
+                        newMessage,
+                    }
+                }
+                );
 
                 !(selectedChatRef.current?.users.some(user => user._id === newMessage.sender))
                     && dispatch({
@@ -227,8 +232,6 @@ const ChatPage = () => {
         if (fetchedMessages) {
             setMessages(fetchedMessages);
         }
-        setSendingMsg(false);
-
     }, [fetchedMessages]);
 
     const handleSearchUsers = () => {
@@ -282,6 +285,10 @@ const ChatPage = () => {
             pending: true
         }
 
+        if (repliedMessage) {
+            newMsg.repliedMessage = repliedMessage._id;
+        }
+
         if (messageType === 'TEXT_MESSAGE') {
             newMsg.kind = 'TEXT_MESSAGE';
 
@@ -296,8 +303,9 @@ const ChatPage = () => {
             setShowSendImageModal(false);
         }
 
+
         dispatch(sendMessage({
-            _id: messageId,
+            tempId: messageId,
             data,
             ...newMsg
         })).then((data) => {
@@ -321,16 +329,16 @@ const ChatPage = () => {
 
         messageTypeRef.current = 'TEXT_MESSAGE';
         setTypedText("");
+
+        handleCancelRiply();
+
         setChatTextareaRows(prev => ({
             ...prev,
             rows: 1,
         }));
-
-
     }
 
     const handleGetMessages = (chat) => {
-
 
         setTypedText("");
         setSelectedChat(chat);
@@ -369,16 +377,11 @@ const ChatPage = () => {
                 if (isTypingRef.current) {
                     setTyping(false);
                     //TODO 
-                    if (!ownUser) {
-                        window.alert('shit')
-                    }
+
                     const reciever = selectedChatRef.current?.users[0]._id === ownUser?._id ? selectedChatRef.current?.users[1]._id : selectedChatRef.current?.users[0]._id;
 
                     if (reciever) {
                         socket.emit('stopTyping', reciever);
-                    } else {
-                        window.alert('shiiiiiiiiit')
-
                     }
                 }
             }, 2000);
@@ -539,23 +542,44 @@ const ChatPage = () => {
 
 
 
+    const [riplySectionShow, setRiplySectionShow] = useState(false);
+    const [repliedMessage, setRepliedMessage] = useState(null);
+
+    const handleCancelRiply = () => {
+        setRiplySectionShow(false);
+        setRepliedMessage(null);
+    }
+
+    const replyToMessage = (message) => {
+
+        setRepliedMessage(message);
+
+        setRiplySectionShow(true);
+        //TODO: nulify replied message after sending message
+    }
+
 
     return (
         <>
             <Container
-                style={{ maxHeight: '100vh' }}
+                style={{
+                    maxHeight: '100vh',
+                    // width: (!mobileDispaly ? '60vw' : '')
+                }}
                 className="chatPageStyles"
-                
             >
 
                 <Row>
 
                     {contactSectionShow &&
 
-                        <Col lg={3} sm={4} className="shadow-lg rounded">
+                        <Col
+                            lg={3}
+                            sm={4}
+                            className="shadow-lg rounded">
                             <Container
                                 className='p-0'
-                                style={{ height: '100vh' }}
+                                style={{ height: '99.9vh' }}
                             >
                                 <Row
                                     className='p-0 '
@@ -684,7 +708,7 @@ const ChatPage = () => {
                         >
 
                             <Row
-                                style={{ height: '100vh' }}
+                                style={{ height: '99.9vh' }}
                                 className='p-0 shit'
                             >
 
@@ -759,7 +783,7 @@ const ChatPage = () => {
                                                 </div>
                                                 <div className="messageSection"
                                                     style={{
-                                                        maxHeight: '80vh'
+                                                        maxHeight: 'calc(91vh - 5.5rem)'
                                                     }}
 
                                                     ref={chatScrollRef} onScroll={handleMessagesScroll}
@@ -788,7 +812,7 @@ const ChatPage = () => {
                                                             }
                                                         }
 
-                                                        return <div ref={scrollRef} key={msg._id}>
+                                                        return <div ref={scrollRef} key={msg._id || msg.tempId}>
                                                             {/* nextIsMe shows that next message belongs to ownUser or not */}
                                                             <>
                                                                 {!sameDay && msg.createdAt &&
@@ -801,7 +825,13 @@ const ChatPage = () => {
                                                                         </span>
                                                                     </div>
                                                                 }
-                                                                <Message nextIsMe={nextIsMe} nextIsUser={nextIsUser} me={ownUser?._id === msg.sender} msg={msg} />
+                                                                <Message
+                                                                    nextIsMe={nextIsMe}
+                                                                    nextIsUser={nextIsUser}
+                                                                    me={ownUser?._id === msg.sender}
+                                                                    msg={msg}
+                                                                    reply={replyToMessage}
+                                                                />
                                                             </>
                                                         </div>
                                                     })}
@@ -822,19 +852,87 @@ const ChatPage = () => {
                                                 }}
                                             >
 
-                                                <InputGroup>
+                                                <InputGroup
+                                                    className='d-flex'
+                                                >
                                                     {/* <Picker style={{ position: 'absolute', bottom: '10px', left: '10px' }} set='apple' onSelect={(e) => setTypedText(prevtext => (prevtext + e.native))} title='Pick your emoji…' emoji='point_up' emojiTooltip={true} /> */}
 
-                                                    <FormControl as="textarea"
-                                                        className="textarea"
-                                                        onChange={handleTextareaChange}
-                                                        onKeyDown={handleTextareaKeyPress}
-                                                        // onChange={(e) => setTypedText(e.target.value)}
-                                                        value={typedText}
-                                                        placeholder="type something"
-                                                        rows={chatTextareaRows.rows}
-                                                    // styles={{ marginRight: "10px" }}
-                                                    />
+                                                    <div
+                                                        className='align-self-end'
+                                                        style={{ width: 'calc(100% - 125px)' }}
+                                                    >
+
+                                                        <Toast
+                                                            className='bg-white'
+                                                            style={{
+                                                                width: '100%',
+                                                                borderRadius: '10px'
+                                                            }}
+                                                            onClick={() => console.log('toast clicked')}
+                                                            show={riplySectionShow}
+                                                        >
+                                                            <div className='d-flex'>
+
+                                                                <div
+                                                                    className='align-self-center ms-2'
+                                                                    style={{ width: '100%' }}
+                                                                >
+
+
+
+
+                                                                    <Card.Body
+                                                                        className='ms-2 mt-1 mb-2 ps-2 pt-2 pb-2 d-flex'
+                                                                        style={{
+                                                                            cursor: 'pointer',
+                                                                            borderLeft: '2px solid black'
+                                                                        }}
+                                                                    >
+                                                                        {repliedMessage?.kind === 'IMAGE_MESSAGE' &&
+                                                                            <Image
+                                                                                src={repliedMessage?.url || `${URL}/message/getMedia/${repliedMessage?.chat}/${repliedMessage?._id}`}
+                                                                                className='me-1'
+                                                                                style={{ width: '2.5rem', height: '2.5rem' }}
+                                                                            />
+                                                                        }
+
+                                                                        <Card.Text
+                                                                            className='align-self-center'
+                                                                            style={{}}
+                                                                        >
+                                                                            {repliedMessage?.text.substring(0, 20) + ' ...'}
+                                                                        </Card.Text>
+                                                                    </Card.Body>
+
+
+                                                                    {/* {repliedMessage?.text.substring(0, 20)} */}
+                                                                </div>
+                                                                <button
+                                                                    type="button"
+                                                                    className="close ml-auto me-2 mt-1 mb-1"
+                                                                    aria-label="Close"
+                                                                    style={{ width: '2rem', height: 'auto' }}
+                                                                    onClick={() => handleCancelRiply()}
+                                                                >
+                                                                    <span aria-hidden="true">&times;</span>
+                                                                </button>
+                                                            </div>
+                                                        </Toast>
+
+
+                                                        <FormControl as="textarea"
+                                                            className="textarea"
+                                                            onChange={handleTextareaChange}
+                                                            onKeyDown={handleTextareaKeyPress}
+                                                            // onChange={(e) => setTypedText(e.target.value)}
+                                                            value={typedText}
+                                                            placeholder="type something"
+                                                            rows={chatTextareaRows.rows}
+                                                        // styles={{ marginRight: "10px" }}
+                                                        />
+                                                    </div>
+
+
 
                                                     {!isRecording &&
                                                         <>
@@ -848,7 +946,7 @@ const ChatPage = () => {
                                                             />
                                                             <Button
                                                                 onClick={() => inputFile.current.click()}
-                                                                className='bg-transparent border-0 ms-2'
+                                                                className='bg-transparent border-0 ms-2 align-self-end'
                                                                 style={{ width: '3rem', height: '3rem' }}
                                                             >
                                                                 <FileAttachIcon />
@@ -910,7 +1008,7 @@ const ChatPage = () => {
 
 
                                                     {typedText.trim().length === 0 || isRecording ?
-                                                        <div className='d-flex ms-3 mb-0'>
+                                                        <div className='d-flex ms-3 mb-0 align-self-end'>
                                                             {isRecording
                                                                 && <div className='d-inline blob-cont me-2 bg-danger' onClick={cancelRecording}>
                                                                     <CancelIcon />
@@ -930,7 +1028,7 @@ const ChatPage = () => {
                                                             </div>
                                                         </div>
                                                         :
-                                                        <div className='d-flex ms-3 mb-0'>
+                                                        <div className='d-flex ms-3 mb-0 align-self-end'>
                                                             <div className='send-blob-cont bg-primary' onClick={handleSendMessage}>
                                                                 {/* <SendIcon /> */}
                                                                 <img className='send-img' src={sendIcon} />

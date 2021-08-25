@@ -19,7 +19,10 @@ const messageSchema = new mongoose.Schema({
         type: mongoose.Types.ObjectId,//holds chat_ID
         ref: 'Chat'
     },
-
+    repliedMessage:{
+        type: mongoose.Types.ObjectId,//holds message_ID
+        ref: 'Message'
+    },
     kind: {
         type: String,
         enum: [AUDIO_MESSAGE_TYPE, TEXT_MESSAGE_TYPE,IMAGE_MESSAGE_TYPE],

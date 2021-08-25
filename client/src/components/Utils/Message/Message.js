@@ -9,13 +9,17 @@ import { URL } from '../../../constants';
 import fs from 'fs';
 import request from 'request';
 import dateFormat from "dateformat";
+import { useSelector } from 'react-redux';
 
-const Message = ({ me, msg, nextIsMe, nextIsUser }) => {
+const Message = ({ me, msg, nextIsMe, nextIsUser, reply }) => {
 
     const text_message_type = 'TEXT_MESSAGE'
     const audio_message_type = 'AUDIO_MESSAGE'
+    const image_message_type = 'IMAGE_MESSAGE'
 
     const msg_type = msg.kind
+
+    const messages = useSelector(state => state.messageData.messages);
 
     useEffect(() => {
         if (msg.kind === 'IMAGE_MESSAGE') {
@@ -24,20 +28,6 @@ const Message = ({ me, msg, nextIsMe, nextIsUser }) => {
     });
 
     const [imageModalShow, setImageModalShow] = useState(false);
-
-
-    // const handleDownloadImage = () => {
-    //     const url =  `${URL}/message/getMedia/${msg.chat}/${msg._id}`
-    //     const fileName = 'imagee'
-    //     request.head(url, function (err, res, body) {
-    //         console.log('content-type:', res.headers['content-type']);
-    //         console.log('content-length:', res.headers['content-length']);
-
-    //         request(url).pipe(fs.createWriteStream(fileName)).on('close', ()=>{
-    //             console.log('downloaded!')
-    //         });
-    //     });
-    // }
 
     const [imageIsLoaded, setImageIsLoaded] = useState(false);
 
@@ -55,51 +45,71 @@ const Message = ({ me, msg, nextIsMe, nextIsUser }) => {
             if (window.innerWidth < 450) {
                 setMobile(true);
                 setMessageMaxWidth('14rem');
-            }else{
+            } else {
                 setMobile(false);
                 setMessageMaxWidth('18rem');
-
             }
         })
-    },[]);
+    }, []);
     return (
         <>
             {me ?
                 <div className={"d-flex " + (nextIsMe ? " mb-1" : " mb-2")}>
                     <div className="flex-grow-1 ms-1 ">
-                        {(msg_type === text_message_type ?
-                            <Card
-                                className="shadow-lg me-3 text-white my-card-cont"
-                                style={{
-                                    maxWidth: messageMaxWidth || '14rem',
-                                    float: 'right',
-                                    backgroundColor: "#3581eb"
-                                }}>
-                                <Card.Body
-                                    className='ps-2 pt-1'
-                                >
-                                    <Card.Text>
-                                        {msg.text}
-                                    </Card.Text>
-                                </Card.Body>
-                                <Card.Body className="pb-1 pe-2 pt-0" >
-                                    <Card.Text
-                                        styles={{ fontSize: '15px' }}
-                                        className='float-end user-select-none text-white-50'
-                                    >
-                                        {msg.pending ?
-                                            <Spinner as='span' animation="border" variant="warning" style={{ width: '1rem', height: '1rem' }} />
-                                            :
-                                            dateFormat(new Date(msg.createdAt || ''), "h:MM TT")
-                                        }
-                                    </Card.Text>
+                        <Card
+                            className="shadow-lg me-3 text-white my-card-cont"
+                            style={{
+                                maxWidth: messageMaxWidth || '14rem',
+                                float: 'right',
+                                backgroundColor: "#3581eb"
+                            }}>
 
+                            {/* TODO: conditionally render reply section if message has reply */}
+                            {/* Like: msg.reply */}
+
+                            {msg.repliedMessage &&
+                                <Card.Body
+                                    className='ms-2 mt-1 ps-2 pt-2 pb-2 d-flex'
+                                    style={{
+                                        cursor: 'pointer',
+                                        borderLeft: '2px solid white'
+                                    }}
+                                >
+                                    {messages.find(m => m._id === msg.repliedMessage)?.kind === image_message_type &&
+                                        <Image
+                                            src={messages.find(m => m._id === msg.repliedMessage)?.url || `${URL}/message/getMedia/${msg.chat}/${messages.find(m => m._id === msg.repliedMessage)?._id}`}
+                                            className='me-2'
+                                            style={{ width: '2.5rem', height: '2.5rem' }}
+                                        />
+                                    }
+
+                                    <Card.Text
+                                        className='align-self-center'
+                                        style={{}}
+                                    >
+                                        {messages.find(m => m._id === msg.repliedMessage)?.text.substring(0, 20) + ' ...'}
+                                    </Card.Text>
                                 </Card.Body>
-                            </Card>
-                            :
-                            <Card
-                                className="shadow-lg me-3 text-white my-card-cont"
-                                style={{ maxWidth: messageMaxWidth || '14rem', float: 'right', backgroundColor: "#3581eb" }}>
+                            }
+
+                            {!msg.pending
+                                && <Card.Body
+                                    className='p-0 m-0 mt-0 ms-2 mb-1'
+                                >
+                                    <Card.Text
+                                        className='d-inline text-white-50'
+                                        style={{ cursor: 'pointer' }}
+                                        onClick={() => reply(msg)}
+                                    >
+                                        reply
+                                    </Card.Text>
+                                </Card.Body>
+                            }
+
+
+                            {/* Implement voice and audio */}
+
+                            {(msg_type === audio_message_type || msg_type === image_message_type) &&
                                 <Card.Body
                                     className='p-0 d-flex justify-content-center mb-0'
                                 >
@@ -107,19 +117,6 @@ const Message = ({ me, msg, nextIsMe, nextIsUser }) => {
                                         <audio className='my-audio mb-0 pb-0' src={msg.url || `${URL}/message/getMedia/${msg.chat}/${msg._id}`} controls controlsList="nodownload" />
                                         :
                                         <>
-                                            {/* {!imageIsLoaded &&
-                                                <div
-                                                    style={{
-                                                        background: 'blue',
-                                                        minWidth: '15rem',
-                                                        minHeight: '15rem',
-                                                        maxWidth: '100%', height: 'auto',
-                                                        cursor: 'pointer',
-                                                        borderTopLeftRadius: '10px',
-                                                        borderTopRightRadius: '10px'
-                                                    }}
-                                                />
-                                            } */}
                                             <Image
                                                 className='mb-0 pb-0 '
                                                 // className={'mb-0 pb-0 ' + (!imageIsLoaded && ' d-none')}
@@ -158,34 +155,39 @@ const Message = ({ me, msg, nextIsMe, nextIsUser }) => {
 
                                             </Modal>
                                         </>
-
                                     }
                                 </Card.Body>
 
-                                {msg.text.trim().length > 0 &&
-                                    <Card.Body
-                                        className="pt-1 ps-2 pb-0"
-                                    >
+                            }
+
+                            {/* Implement voice and audio */}
+
+
+                            {msg.text.trim().length > 0 &&
+
+                                <Card.Body
+                                    className='ps-2 pt-1 mb-0'
+                                >
+                                    <Card.Text>
                                         {msg.text}
-                                    </Card.Body>
-                                }
-
-                                <Card.Body className="pb-1 pe-2 pt-0 mt-0" >
-                                    <Card.Text
-                                        styles={{ fontSize: '15px' }}
-                                        className='float-end user-select-none text-white-50'
-                                    >
-
-                                        {msg.pending ?
-                                            <Spinner as='span' animation="border" variant="warning" style={{ width: '1rem', height: '1rem' }} />
-                                            :
-                                            dateFormat(new Date(msg.createdAt || ''), "h:MM TT")
-                                        }
                                     </Card.Text>
-
                                 </Card.Body>
-                            </Card>
-                        )}
+                            }
+                            <Card.Body className="pb-1 pe-2 pt-0" >
+                                <Card.Text
+                                    styles={{ fontSize: '15px' }}
+                                    className='float-end user-select-none text-white-50'
+                                >
+                                    {msg.pending ?
+                                        <Spinner as='span' animation="border" variant="warning" style={{ width: '1rem', height: '1rem' }} />
+                                        :
+                                        dateFormat(new Date(msg.createdAt || ''), "h:MM TT")
+                                    }
+                                </Card.Text>
+
+                            </Card.Body>
+                        </Card>
+
                     </div>
                     {/* {!nextIsMe && <div className="flex-shrink-0 mb-1 align-self-end">
                         <img src={img} className="rounded-circle prof-img border" alt="img" />
@@ -199,30 +201,57 @@ const Message = ({ me, msg, nextIsMe, nextIsUser }) => {
                         <img src={img} className="rounded-circle prof-img border" alt="img" />
                     </div>} */}
                     <div className='flex-grow-1  ms-2'>
-                        {(msg_type === text_message_type ?
-                            <Card
-                                className="shadow-lg user-card-cont"
-                                style={{ float: "left", maxWidth: messageMaxWidth || '14rem', backgroundColor: "#c5c5c3" }}>
-                                <Card.Body
-                                    className="pt-1 ps-2"
-                                >
-                                    <Card.Text>
-                                        {msg.text}
-                                    </Card.Text>
-                                </Card.Body>
-                                <Card.Body className="pb-1 pe-2 pt-0" >
-                                    <Card.Text
-                                        className='float-end text-muted user-select-none'
-                                    >
-                                        {dateFormat(new Date(msg.createdAt || ''), "h:MM TT")}
-                                    </Card.Text>
+                        <Card
+                            className="shadow-lg user-card-cont"
+                            style={{ float: "left", maxWidth: messageMaxWidth || '14rem', backgroundColor: "#c5c5c3" }}>
 
+
+                            {/* TODO: conditionally render reply section if message has reply */}
+                            {/* Like: msg.reply */}
+
+                            {msg.repliedMessage &&
+                                <Card.Body
+                                    className='ms-2 mt-1 ps-2 pt-2 pb-2 d-flex'
+                                    style={{
+                                        cursor: 'pointer',
+                                        borderLeft: '2px solid black'
+                                    }}
+                                >
+
+                                    {messages.find(m => m._id === msg.repliedMessage)?.kind === image_message_type &&
+                                        <Image
+                                            src={messages.find(m => m._id === msg.repliedMessage)?.url || `${URL}/message/getMedia/${msg.chat}/${messages.find(m => m._id === msg.repliedMessage)?._id}`}
+                                            className='me-2'
+                                            style={{ width: '2.5rem', height: '2.5rem' }}
+                                        />
+                                    }
+
+                                    <Card.Text
+                                        className='align-self-center'
+                                        style={{}}
+                                    >
+                                        {/* some text with substring with some length */}
+                                        {messages.find(m => m._id === msg.repliedMessage)?.text.substring(0, 20) + ' ...'}
+                                    </Card.Text>
                                 </Card.Body>
-                            </Card>
-                            :
-                            <Card
-                                className="shadow-lg user-card-cont"
-                                style={{ float: "left", maxWidth: messageMaxWidth || '14rem', backgroundColor: "#c5c5c3" }}>
+                            }
+
+                            <Card.Body
+                                className='p-0 m-0 mt-0 ms-2 mb-1'
+                            >
+                                <Card.Text
+                                    className='d-inline text-dark'
+                                    style={{ cursor: 'pointer' }}
+                                    onClick={() => reply(msg)}
+                                >
+                                    reply
+                                </Card.Text>
+                            </Card.Body>
+
+
+
+                            {(msg_type === audio_message_type || msg_type === image_message_type) &&
+
                                 <Card.Body
                                     className="p-0 d-flex justify-content-center mb-0"
                                 >
@@ -270,24 +299,29 @@ const Message = ({ me, msg, nextIsMe, nextIsUser }) => {
                                     }
 
                                 </Card.Body>
+                            }
 
-                                {msg.text.trim().length > 0 &&
-                                    <Card.Body
-                                        className="pt-1 ps-2 pb-0"
-                                    >
+                            {msg.text.trim().length > 0 &&
+                                <Card.Body
+                                    className="pt-1 ps-2"
+                                >
+
+                                    <Card.Text>
                                         {msg.text}
-                                    </Card.Body>
-                                }
-                                <Card.Body className="pb-1 pe-2 pt-0" >
-                                    <Card.Text
-                                        className='float-end text-muted user-select-none'
-                                    >
-                                        {dateFormat(new Date(msg.createdAt || ''), "h:MM TT")}
                                     </Card.Text>
-
                                 </Card.Body>
-                            </Card>
-                        )}
+                            }
+
+                            <Card.Body className="pb-1 pe-2 pt-0" >
+                                <Card.Text
+                                    className='float-end text-muted user-select-none'
+                                >
+                                    {dateFormat(new Date(msg.createdAt || ''), "h:MM TT")}
+                                </Card.Text>
+
+                            </Card.Body>
+                        </Card>
+
                     </div>
 
                 </div>

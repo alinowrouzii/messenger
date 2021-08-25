@@ -8,7 +8,8 @@ import {
     LOGOUT,
     REMOVE_NEW_MESSAGE_NOTIF,
     SET_NEW_MESSAGE_NOTIF,
-    SEND_MESSAGE
+    SEND_MESSAGE,
+    ADD_MESSAGE_FROM_SOCKET
 } from "../actions/types";
 
 const initialState = { messages: [], messageInfo: "", messagesIsReady: false, newMessagesNotification: [] };
@@ -27,8 +28,10 @@ export default (state = initialState, action) => {
             return {
                 ...state,
                 messages: state.messages.map(message => {
-                    if (message._id === payload.messageId) {
+                    if (message.tempId === payload.tempId) {
                         //pending=false means message is sent
+                        message._id = payload.realId;
+
                         message.pending = false;
                         message.createdAt = Date.now();
                         return message;
@@ -81,6 +84,11 @@ export default (state = initialState, action) => {
             return {
                 ...state,
                 newMessagesNotification: state.newMessagesNotification.filter(el => el !== payload.user)
+            };
+        case ADD_MESSAGE_FROM_SOCKET:
+            return {
+                ...state,
+                messages: [...state.messages, payload.newMessage],
             };
 
         case LOGOUT:

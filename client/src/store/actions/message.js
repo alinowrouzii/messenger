@@ -17,11 +17,13 @@ export const sendMessage = (newMsg) => (dispatch) => {
     const kind = msg.kind;
     if (kind === 'AUDIO_MESSAGE' || kind === 'IMAGE_MESSAGE') {
 
-
         const form = new FormData();
         form.append(kind, data);
         form.append('text', msg.text.length === 0 ? ' ' : msg.text);
-
+        if(msg.repliedMessage){
+            form.append('repliedMessage', msg.repliedMessage);
+        }
+        
         const url = window.URL.createObjectURL(data);
         dispatch({
             type: SEND_MESSAGE,
@@ -35,7 +37,10 @@ export const sendMessage = (newMsg) => (dispatch) => {
                 dispatch({
                     type: SEND_MESSAGE_SUCCESS,
                     payload: {
-                        messageId: msg._id,
+                        //recognize message by its tempId
+                        tempId: msg.tempId,
+                        //TODO: add real id returned by server to the current message
+                        realId: response.data.messageId,
                         messageInfo: response.data.messageInfo
                     }
                 });
@@ -80,7 +85,10 @@ export const sendMessage = (newMsg) => (dispatch) => {
                 dispatch({
                     type: SEND_MESSAGE_SUCCESS,
                     payload: {
-                        messageId: msg._id,
+                        //recognize message by its tempId
+                        tempId: msg.tempId,
+                        //TODO: add real id returned by server to the current message
+                        realId: response.data.messageId,
                         messageInfo: response.data.messageInfo
                     }
                 });
