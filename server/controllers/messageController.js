@@ -66,7 +66,7 @@ export const sendMessage = async (req, res) => {
 
                                 const filename = req.file.filename;
 
-                                const { text } = req.body;
+                                const { text, repliedMessage } = req.body;
                                 const msg = new Message({
                                     text,
                                     messageDataName: filename,
@@ -74,6 +74,11 @@ export const sendMessage = async (req, res) => {
                                     chat: chatId,
                                     kind: msg_type
                                 });
+                                
+                                if (repliedMessage && repliedMessage !== 'undefined') {
+                                    console.log('hey')
+                                    msg.repliedMessage = mongoose.Types.ObjectId(repliedMessage);
+                                }
                                 await msg.save();
 
                                 return res.status(201).json({
@@ -84,7 +89,7 @@ export const sendMessage = async (req, res) => {
                             });
                         } else if (msg_type === TEXT_MESSAGE_TYPE) {
 
-                            const { text } = req.body;
+                            const { text, repliedMessage } = req.body;
 
                             const msg = new Message({
                                 text,
@@ -92,6 +97,10 @@ export const sendMessage = async (req, res) => {
                                 chat: chatId,
                                 kind: TEXT_MESSAGE_TYPE
                             });
+
+                            if (repliedMessage) {
+                                msg.repliedMessage = mongoose.Types.ObjectId(repliedMessage);
+                            }
 
                             await msg.save();
                             return res.status(201).json({
