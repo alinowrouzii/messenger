@@ -3,11 +3,19 @@ import './styles.css'
 import { Card, Image } from 'react-bootstrap';
 import { format } from 'timeago.js';
 import img from './../../../Images/no-profile.jpg'
+import { URL } from './../../../constants/index';
 const Profile = (props) => {
+    
     return (
         <div>
             <div className='justify-content-center d-flex'>
-                <Image variant="top" src={img} roundedCircle className='border' />
+                <Image 
+                variant="top"
+                 src={`${URL}/user/getProfilePhoto/${props.user._id}`} 
+                 roundedCircle
+                  className='border mt-3' 
+                      style={{width:'15rem', height:'15rem'}}
+                  />
             </div>
             <div>
 

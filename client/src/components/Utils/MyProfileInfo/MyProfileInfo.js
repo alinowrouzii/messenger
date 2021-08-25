@@ -3,6 +3,7 @@ import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { useSelector } from 'react-redux';
 import img from './../../../Images/no-profile.jpg'
 import './styles.css';
+import { URL } from './../../../constants/index';
 
 const MyProfileInfo = () => {
 
@@ -12,16 +13,16 @@ const MyProfileInfo = () => {
     const [name, setName] = useState('loading...')
     const [username, setUsername] = useState('loading...')
 
-    const ownUser = useSelector(state=> state.userData.ownUser);
-    const ownUserIsReady = useSelector(state=> state.userData.ownUserIsReady);
+    const ownUser = useSelector(state => state.userData.ownUser);
+    const ownUserIsReady = useSelector(state => state.userData.ownUserIsReady);
 
-    useEffect(()=>{
+    useEffect(() => {
         // console.log('recal in refresh')
-        if(ownUserIsReady){
+        if (ownUserIsReady) {
             setName(ownUser?.name);
             setUsername(ownUser?.username);
         }
-    },[ownUserIsReady]);
+    }, [ownUserIsReady]);
 
     const handleKeyPress = (e) => {
         if (e.key === 'Enter') {
@@ -47,7 +48,9 @@ const MyProfileInfo = () => {
                 overlay={renderTooltip}
             >
                 <div className="flex-shrink-0">
-                    <img src={img} className="rounded-circle prof-img" alt="img" />
+                    <img
+                        src={`${URL}/user/getProfilePhoto/${ownUser?._id}`}
+                        className="rounded-circle prof-img" alt="img" />
                 </div>
             </OverlayTrigger>
             <div className="flex-grow-1 ms-3  testt rounded">
