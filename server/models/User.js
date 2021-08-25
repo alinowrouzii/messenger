@@ -17,7 +17,9 @@ const userSchema = new mongoose.Schema({
     },
 
     // password: String,
-    // profilePic:
+    profilePhotoName: {
+        type: String
+    },
     chats: {//holds chats_Id
         type: [mongoose.Types.ObjectId],
         ref: 'Chat',

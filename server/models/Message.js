@@ -1,9 +1,9 @@
 import mongoose from 'mongoose';
-import { AUDIO_MESSAGE_TYPE, TEXT_MESSAGE_TYPE } from './constants.js';
+import { AUDIO_MESSAGE_TYPE, TEXT_MESSAGE_TYPE,IMAGE_MESSAGE_TYPE } from './constants.js';
 
 const options = {
     timestamps: true,
-    discriminatorKey: 'kind'
+    // discriminatorKey: 'kind'
 };
 
 const messageSchema = new mongoose.Schema({
@@ -18,6 +18,19 @@ const messageSchema = new mongoose.Schema({
     chat: {
         type: mongoose.Types.ObjectId,//holds chat_ID
         ref: 'Chat'
+    },
+
+    kind: {
+        type: String,
+        enum: [AUDIO_MESSAGE_TYPE, TEXT_MESSAGE_TYPE,IMAGE_MESSAGE_TYPE],
+        required: true
+    },
+    messageDataName: {
+        type: String
+    },
+    text: {
+        type: String,
+        required: true
     }
 
 }, options);
@@ -26,20 +39,20 @@ const messageSchema = new mongoose.Schema({
 const Message = mongoose.model('Message', messageSchema);
 
 
-export const AudioMessage = Message.discriminator(AUDIO_MESSAGE_TYPE,
-    new mongoose.Schema({
-        audioName: {
-            type: String,
-            required: true
-        },
-    }, options));
+// export const AudioMessage = Message.discriminator(AUDIO_MESSAGE_TYPE,
+//     new mongoose.Schema({
+//         audioName: {
+//             type: String,
+//             required: true
+//         },
+//     }, options));
 
-export const TextMessage = Message.discriminator(TEXT_MESSAGE_TYPE,
-    new mongoose.Schema({
-        data: {
-            type: String,
-            required: true
-        },
-    }, options));
+// export const TextMessage = Message.discriminator(TEXT_MESSAGE_TYPE,
+//     new mongoose.Schema({
+//         data: {
+//             type: String,
+//             required: true
+//         },
+//     }, options));
 
 export default Message;
