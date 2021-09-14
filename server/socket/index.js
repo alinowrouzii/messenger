@@ -32,43 +32,23 @@ const socketConfig = (io, sessionMiddleware, passport) => {
         });
 
 
-        socket.on("sendMessage", ({ receiver, data, kind }) => {
-            console.log('message is sending...');
-            console.log('users: ', users);
-            console.log(socket.id)
-            console.log(new Date());
-            console.log('---------------')
-
+        socket.on("sendMessage", ({ receiver, ...newMessage }) => {
+           
             const sender = socket.request.user;
-            const user = getUser(receiver);
-            if (user) {
-                io.to(user.socketId).emit("getMessage", {
-                    sender: sender._id.toString(),
-                    data, kind
-                });
+            if (sender._id.toString() === newMessage.sender) {
+
+                const user = getUser(receiver);
+                if (user) {
+                    io.to(user.socketId).emit("getMessage", newMessage);
+                }
             }
         });
-
-        //TODO: get userId from session and then add user with that id
-        // socket.on("addUser", (userId, name) => {
-        //     //try to add user
-        //     console.log('--------try to add user---------')
-        //     console.log(new Date());
-        //     console.log(users);
-        //     console.log('type of userId', typeof userId);
-        //     addUser(userId, socket.id, name);
-        //     console.log(users);
-        //     console.log('--------------------------------')
-        //     io.emit("getUsers", users);
-        // });
-
 
         socket.on("isTyping", (receiver) => {
             const user = getUser(receiver);
             const ownUser = socket.request.user;
             // console.log('ownuser', ownUser);
             if (user) {
-                console.log('send typing')
                 io.to(user.socketId).emit("isTyping", {
                     typingUser: ownUser._id.toString()
                 });
@@ -80,29 +60,11 @@ const socketConfig = (io, sessionMiddleware, passport) => {
             const ownUser = socket.request.user;
             // console.log(typeof ownUser)
             if (user) {
-                console.log('send stop typing')
                 io.to(user.socketId).emit("stopTyping", {
                     typingUser: ownUser._id.toString()
                 });
             }
         });
-
-        // socket.on("send-audio", ({ buffer, reciever }) => {
-        //     const user = getUser(reciever);
-        //     const ownUser = socket.request.user;
-        //     // console.log('ownuser', ownUser);
-        //     if (user) {
-        //         console.log('sending audio file')
-        //         io.to(user.socketId).emit("get-audio", {
-        //             sender: ownUser._id.toString(),
-        //             buffer
-        //         });
-        //     }
-        // });
-
-
-
-        // socket.on("disconnect", () => console.log("closed connection\n-------------------------------"))
 
         // when disconnect
         socket.on("disconnect", () => {
@@ -126,22 +88,14 @@ const socketConfig = (io, sessionMiddleware, passport) => {
 
 
         //try to add user
-        console.log('--------try to add user---------');
-
         const session = socket.request.session;
-        console.log(`saving sid ${socket.id} in session ${session.id}`);
         session.socketId = socket.id;
         session.save();
 
-        console.log(new Date());
-        console.log(users);
         const ownUser = socket.request.user;
         const userId = ownUser._id.toString();
         const name = ownUser.name;
-        console.log('type of userId', typeof userId);
         addUser(userId, socket.id, name);
-        console.log(users);
-        console.log('--------------------------------')
         io.emit("getUsers", users);
     });
 }

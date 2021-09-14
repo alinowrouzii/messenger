@@ -62,7 +62,7 @@ export const signup = async (req, res) => {
 
     } catch (err) {
         console.log(err);
-        res.status('502').json({ message: 'Database error!' });
+        res.status(502).json({ message: 'Database error!' });
     }
 }
 
