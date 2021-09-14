@@ -25,7 +25,7 @@ const Message = ({ me, msg, nextIsMe, nextIsUser, reply }) => {
         if (msg.kind === 'IMAGE_MESSAGE') {
             console.log(`${URL}/message/getMedia/${msg.chat}/${msg._id}`)
         }
-    });
+    },[]);
 
     const [imageModalShow, setImageModalShow] = useState(false);
 
