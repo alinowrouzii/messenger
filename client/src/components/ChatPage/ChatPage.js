@@ -520,16 +520,20 @@ const ChatPage = () => {
         if (window.innerWidth < 450) {
             mobileDispaly.current = true;
 
+
             setChatSectionShow(false);
             setContactSectionShow(true);
         }
 
         window.addEventListener('resize', () => {
-            if (window.innerWidth <= 575) {
-                mobileDispaly.current = true;
 
-                setChatSectionShow(false);
-                setContactSectionShow(true);
+            if (window.innerWidth <= 575) {
+                if (!mobileDispaly.current) {
+                    mobileDispaly.current = true;
+
+                    setChatSectionShow(false);
+                    setContactSectionShow(true);
+                }
             } else {
                 mobileDispaly.current = false;
 
