@@ -4,7 +4,8 @@ import { URL } from './constants/index';
 const socket = io(URL, {
     autoConnect: false,
     // withCredentials: true,
-    transports: ['websocket']
+    transports: ['websocket'],
+    upgrade: false
 });
 
 export default socket;
