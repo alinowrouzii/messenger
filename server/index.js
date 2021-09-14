@@ -29,7 +29,13 @@ const sessionMiddleware = session({
 
 app.use(sessionMiddleware);
 
-app.use(cookieParser(process.env.SESSION_SECRET))
+let SESSION_SECRET;
+if (process.env.NODE_ENV === "development") {
+  SESSION_SECRET = 'some random text';
+} else {
+  SESSION_SECRET = process.env.SESSION_SECRET;
+}
+app.use(cookieParser(SESSION_SECRET))
 app.use(passport.initialize());
 app.use(passport.session());
 
