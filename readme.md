@@ -4,7 +4,7 @@
 ###### You can send text and audio message and also photo.
 
 ## Modules [Frontend]
-this messenger uses a number of open source projects to work properly:
+this messenger uses a number of open source modules to work properly:
 - [React-js] - for UI creation
 - [React-Bootstrap] - for styling components
 - [socket.io-client] - for client-side real-time communication
