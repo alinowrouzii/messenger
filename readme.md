@@ -36,7 +36,7 @@ cd messenger-master/client
 npm i
 npm start
 ```
-The frontend is available on http://localhost:3000
+The frontend is available at http://localhost:3000
 
    [React-js]: <https://reactjs.org/>
    [React-Bootstrap]: <https://react-bootstrap.github.io/>

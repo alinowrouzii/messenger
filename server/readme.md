@@ -12,7 +12,7 @@
 
 ## How to run API
 
-At first you should Install the api dependencies and devDepenendencies and start the server.
+At first you should Install the api dependencies and devDependencies and start the server.
 
 You should install MongoDB before.
 ```sh
