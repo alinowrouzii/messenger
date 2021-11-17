@@ -40,6 +40,7 @@ The frontend is available at http://localhost:3000
 
 
 ![User one](https://github.com/alinowrouzii/messenger/blob/master/md/user-one.gif)
+![User one](https://github.com/alinowrouzii/messenger/blob/master/md/user-two.gif)
 
 
 
