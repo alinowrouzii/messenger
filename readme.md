@@ -17,7 +17,7 @@ this messenger uses a number of open source modules to work properly:
 
 ## How to run API
 
-At first you should Install the api dependencies and devDepenendencies and start the server.
+At first you should Install the api dependencies and devDependencies and start the server.
 
 You should install MongoDB before.
 ```sh
@@ -37,6 +37,13 @@ npm i
 npm start
 ```
 The frontend is available at http://localhost:3000
+
+
+![User one](https://github.com/alinowrouzii/messenger/blob/master/md/user-one.gif)
+
+
+
+
 
    [React-js]: <https://reactjs.org/>
    [React-Bootstrap]: <https://react-bootstrap.github.io/>
