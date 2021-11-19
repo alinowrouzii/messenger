@@ -1,5 +1,5 @@
 
-## This is simple messenger that its API is written by Node js, and the Frontend written by React.
+## This is a simple messenger whose API is written by Node js, and the Frontend written by React.
 
 ###### You can send text and audio message and also photo.
 
@@ -38,7 +38,7 @@ npm start
 ```
 The frontend is available at http://localhost:3000
 
-
+## See:
 ![User one](https://github.com/alinowrouzii/messenger/blob/master/md/user-one.gif)
 ![User one](https://github.com/alinowrouzii/messenger/blob/master/md/user-two.gif)
 
