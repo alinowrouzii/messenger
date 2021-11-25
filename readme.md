@@ -39,8 +39,10 @@ npm start
 The frontend is available at http://localhost:3000
 
 ## See:
-![User one](https://github.com/alinowrouzii/messenger/blob/master/md/user-one.gif)
-![User one](https://github.com/alinowrouzii/messenger/blob/master/md/user-two.gif)
+
+
+<img src="https://github.com/alinowrouzii/messenger/blob/master/md/user-one.gif" width="50%" height="100%"/>
+<img src="https://github.com/alinowrouzii/messenger/blob/master/md/user-two.gif" width="50%" height="100%"/>
 
 
 
